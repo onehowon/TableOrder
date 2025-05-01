@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByTable_TableNumberAndCreatedAtBetween(Integer tableNumber, LocalDateTime start, LocalDateTime end);
+    List<Order> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
 }
