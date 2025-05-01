@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class CommonResponse {
+public class CommonResponse<T> {
     private final int code;
     private final String message;
     private final T data;
 
-    public static <T> CommonResponse<T> success(T data){
+    public static <T> CommonResponse<T> success(T data, String message) {
         return CommonResponse.<T>builder()
                 .code(200)
                 .message(message)
@@ -20,7 +20,7 @@ public class CommonResponse {
                 .build();
     }
 
-    public static <T> CommonResponse<T> error(String message, int code){
+    public static <T> CommonResponse<T> error(String message, int code) {
         return CommonResponse.<T>builder()
                 .code(code)
                 .message(message)
