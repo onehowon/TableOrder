@@ -47,4 +47,12 @@ public class MenuService {
         return MenuDTO.builder()
                 .id(e.getId()).name(e.getName()).description(e.getDescription())
                 .price(e.getPrice()).isAvailable(e.getIsAvailable()).build(); }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public MenuDTO getOne(Long id) {
+        Menu menu = menuRepo.findById(id)
+                .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
+        return toDto(menu);
+    }
+
 }
