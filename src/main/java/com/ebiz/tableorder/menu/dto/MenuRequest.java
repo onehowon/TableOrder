@@ -1,16 +1,18 @@
-package com.ebiz.tableorder.order.dto;
+package com.ebiz.tableorder.menu.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItemDTO {
+public class MenuRequest {
     private String name;
-    private Integer quantity;
+    private String description;
+    private BigDecimal price;
 }
