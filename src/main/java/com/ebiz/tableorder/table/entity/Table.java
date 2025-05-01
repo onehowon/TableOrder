@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@jakarta.persistence.Table(name = "table")
+@jakarta.persistence.Table(name = "tables")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
