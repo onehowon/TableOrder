@@ -35,6 +35,10 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Clean previous jar on server
+        run: |
+          ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -rf /home/ubuntu/table-order/app.jar"
+
       - name: Upload jar to server
         run: |
           scp -i key.pem build/libs/tableorder-0.0.1-SNAPSHOT.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/table-order/app.jar
