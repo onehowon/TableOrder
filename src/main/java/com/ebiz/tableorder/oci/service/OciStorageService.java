@@ -25,20 +25,25 @@ public class OciStorageService {
     @Value("${oci.bucket-name}")
     private String bucketName;
 
+    @Value("${oci.auth.region}")
+    private String regionId;
+
     /**
      * MultipartFile을 OCI Object Storage에 올리고, 외부에서 접근 가능한 URL을 반환합니다.
      */
     public String upload(MultipartFile file) {
         try (InputStream in = file.getInputStream()) {
-            // 1) 유니크한 오브젝트 이름 생성
-            String ext = "";
+            // 1) 원본 파일명에서 확장자 추출
             String original = file.getOriginalFilename();
-            if (original != null && original.contains(".")) {
+            String ext = "";
+            if (original != null && original.lastIndexOf('.') != -1) {
                 ext = original.substring(original.lastIndexOf('.'));
             }
+
+            // 2) UUID 기반의 objectName 생성
             String objectName = UUID.randomUUID().toString() + ext;
 
-            // 2) PutObject 요청
+            // 3) PutObjectRequest 빌드
             PutObjectRequest req = PutObjectRequest.builder()
                     .namespaceName(namespace)
                     .bucketName(bucketName)
@@ -47,11 +52,10 @@ public class OciStorageService {
                     .contentLength(file.getSize())
                     .build();
 
+            // 4) 업로드 실행
             PutObjectResponse resp = objectStorageClient.putObject(req);
 
-            // 3) 퍼블릭 URL 조합
-            //    SDK에 설정된 region을 가져와서 URL을 만들면 됩니다.
-            String regionId = objectStorageClient.getRegion().getRegionId();
+            // 5) URL 인코딩 및 리턴
             String encodedName = URLEncoder.encode(objectName, StandardCharsets.UTF_8);
             return String.format(
                     "https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s",
