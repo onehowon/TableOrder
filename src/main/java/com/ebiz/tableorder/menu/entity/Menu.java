@@ -32,6 +32,9 @@ public class Menu {
     @Column(name = "is_available")
     private Boolean isAvailable;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
