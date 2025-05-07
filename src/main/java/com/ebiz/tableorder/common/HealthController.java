@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthController {
 
+    //test
     @GetMapping("/health")
     public CommonResponse<String> health() {
         return CommonResponse.success("pong", "헬스체크 성공");
