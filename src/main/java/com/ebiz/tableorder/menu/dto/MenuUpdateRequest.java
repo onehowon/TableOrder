@@ -16,5 +16,4 @@ public class MenuUpdateRequest {
     private String description;
     private Integer price;
     private Boolean isAvailable;
-    private String imageUrl;
 }

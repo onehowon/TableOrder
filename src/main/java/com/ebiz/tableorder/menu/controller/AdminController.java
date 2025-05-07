@@ -49,14 +49,19 @@ public class AdminController {
     @PutMapping(value = "/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponse<MenuDTO>> updateMenu(
             @PathVariable Long menuId,
-            @RequestPart("meta") @Valid MenuUpdateRequest req,
-            @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
-        String imageUrl = null;
-        if (file != null && !file.isEmpty()) {
-            imageUrl = storageService.upload(file);
-        }
-        MenuDTO dto = menuService.update(menuId, req, imageUrl);
+            @RequestParam(required = false) String  name,
+            @RequestParam(required = false) String  description,
+            @RequestParam(required = false) Integer price,
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        String imageUrl = (file != null && !file.isEmpty())
+                ? storageService.upload(file)
+                : null;
+
+        MenuUpdateRequest req = new MenuUpdateRequest(name, description, price, isAvailable);
+        MenuDTO dto           = menuService.update(menuId, req, imageUrl);
+
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 수정 완료"));
     }
 
