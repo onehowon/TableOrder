@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class MenuUpdateRequest {
     private String name;
     private String description;
-    private BigDecimal price;
+    private Integer price;
     private Boolean isAvailable;
     private String imageUrl;
 }

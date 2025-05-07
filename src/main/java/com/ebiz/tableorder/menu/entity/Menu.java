@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Table(name = "menus")
-@Builder
+@Builder(toBuilder = true)
 public class Menu {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
@@ -27,7 +27,7 @@ public class Menu {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Integer price;
 
     @Column(name = "is_available")
     private Boolean isAvailable;

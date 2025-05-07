@@ -19,29 +19,33 @@ import java.util.stream.Collectors;
 public class MenuService {
     private final MenuRepository menuRepo;
 
-    public MenuDTO create(MenuRequest req, String imageUrl){
-        Menu e=Menu.builder()
+    public MenuDTO create(MenuRequest req, String imageUrl) {
+        Menu menu = Menu.builder()
                 .name(req.getName())
                 .description(req.getDescription())
                 .price(req.getPrice())
                 .isAvailable(true)
-                .imageUrl(req.getImageUrl())
+                .imageUrl(imageUrl)
                 .build();
-        return toDto(menuRepo.save(e)); }
+        return toDto(menuRepo.save(menu));
+    }
 
-    public MenuDTO update(Long id, MenuUpdateRequest req, String imageUrl){
-        Menu m=menuRepo.findById(id)
-                .orElseThrow(()->new ReportableError(404,"메뉴를 찾을 수 없음"));
-        Menu updated=Menu.builder()
-                .id(m.getId())
-                .name(req.getName()!=null?req.getName():m.getName())
-                .description(req.getDescription()!=null?req.getDescription():m.getDescription())
-                .price(req.getPrice()!=null?req.getPrice():m.getPrice())
-                .isAvailable(req.getIsAvailable()!=null?req.getIsAvailable():m.getIsAvailable())
-                .imageUrl(req.getImageUrl() != null ? req.getImageUrl() : m.getImageUrl())
-                .createdAt(m.getCreatedAt())
+    @Transactional
+    public MenuDTO update(Long id, MenuUpdateRequest req, String imageUrl) {
+        Menu menu = menuRepo.findById(id)
+                .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없음"));
+
+        Menu updated = menu.toBuilder()
+                .name(          req.getName()        != null ? req.getName()        : menu.getName())
+                .description(   req.getDescription() != null ? req.getDescription() : menu.getDescription())
+                .price(         req.getPrice()       != null ? req.getPrice()       : menu.getPrice())
+                .isAvailable(   req.getIsAvailable() != null ? req.getIsAvailable() : menu.getIsAvailable())
+                .imageUrl(      imageUrl             != null ? imageUrl             : menu.getImageUrl())
                 .build();
-        return toDto(menuRepo.save(updated)); }
+
+        return toDto(menuRepo.save(updated));
+    }
+
 
     public List<MenuDTO> getAll(){
         return menuRepo.findAll().stream().map(this::toDto).collect(Collectors.toList()); }
