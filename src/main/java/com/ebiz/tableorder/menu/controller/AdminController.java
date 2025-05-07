@@ -5,6 +5,7 @@ import com.ebiz.tableorder.menu.dto.MenuDTO;
 import com.ebiz.tableorder.menu.dto.MenuRequest;
 import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.service.MenuService;
+import com.ebiz.tableorder.oci.service.OciStorageService;
 import com.ebiz.tableorder.order.dto.OrderDetailDTO;
 import com.ebiz.tableorder.order.dto.OrderResponse;
 import com.ebiz.tableorder.order.dto.StatusUpdateRequest;
@@ -13,8 +14,10 @@ import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,21 +29,32 @@ public class AdminController {
     private final MenuService menuService;
     private final OrderService orderService;
     private final TableService tableService;
+    private final OciStorageService storageService;
 
-    @PostMapping("/menus")
-    public ResponseEntity<CommonResponse<MenuDTO>>
-    createMenu(@RequestBody @Valid MenuRequest req) {
-
-        MenuDTO dto = menuService.create(req);
+    @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CommonResponse<MenuDTO>> createMenu(
+            @RequestPart("meta") @Valid MenuRequest req,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            imageUrl = storageService.upload(file);
+        }
+        MenuDTO dto = menuService.create(req, imageUrl);
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 등록 완료"));
     }
 
-    @PutMapping("/menus/{menuId}")
-    public ResponseEntity<CommonResponse<MenuDTO>>
-    updateMenu(@PathVariable Long menuId,
-               @RequestBody @Valid MenuUpdateRequest req) {
-
-        MenuDTO dto = menuService.update(menuId, req);
+    @PutMapping(value = "/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CommonResponse<MenuDTO>> updateMenu(
+            @PathVariable Long menuId,
+            @RequestPart("meta") @Valid MenuUpdateRequest req,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            imageUrl = storageService.upload(file);
+        }
+        MenuDTO dto = menuService.update(menuId, req, imageUrl);
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 수정 완료"));
     }
 
