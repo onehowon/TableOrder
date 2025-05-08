@@ -17,18 +17,12 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1) CORS 활성화
                 .cors(Customizer.withDefaults())
-                // 2) CSRF 비활성화 (API 서버인 경우)
                 .csrf(csrf -> csrf.disable())
-                // 3) 인증/인가 설정 예시 (열어둘 경로 지정)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/customer/**", "/admin/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // ← 이거 하나만!
                 )
-                // 4) 필요 시 JWT, formLogin, httpBasic 등 설정
-                .httpBasic(Customizer.withDefaults())
-        ;
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
