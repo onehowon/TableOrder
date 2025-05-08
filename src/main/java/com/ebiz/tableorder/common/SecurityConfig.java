@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // 3) 인증/인가 설정 예시 (열어둘 경로 지정)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/customer/**").permitAll()
+                        .requestMatchers("/health", "/customer/**", "/admin/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 4) 필요 시 JWT, formLogin, httpBasic 등 설정
