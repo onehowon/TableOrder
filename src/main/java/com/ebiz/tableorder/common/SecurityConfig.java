@@ -35,10 +35,9 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*")); // 와일드카드 패턴
+        cfg.setAllowedOrigins(List.of("https://www.ebiztable.shop"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
-        // axios.withCredentials(true) 를 쓴다면 true 로 바꿔야 아래 헤더가 응답됩니다.
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 
