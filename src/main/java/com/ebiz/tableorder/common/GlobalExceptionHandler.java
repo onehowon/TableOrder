@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
     /* ===== 알 수 없는 서버 오류 ===== */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CommonResponse<Object>> handleOthers(Exception e) {
+        log.error("서버 오류", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonResponse.error("서버 내부 오류", 500));
