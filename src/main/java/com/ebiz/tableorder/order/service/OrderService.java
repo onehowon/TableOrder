@@ -49,25 +49,34 @@ public class OrderService {
         orderRepo.save(order);
 
         // 3) 주문 아이템 생성 및 저장
-        List<OrderItem> items = req.getItems().stream()
+        List<OrderItem> savedItems = req.getItems().stream()
                 .map(io -> {
                     Menu menu = menuRepo.findById(io.getMenuId())
                             .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
-                    return OrderItem.builder()
+                    OrderItem oi = OrderItem.builder()
                             .order(order)
                             .menu(menu)
                             .quantity(io.getQuantity())
                             .build();
+                    return oi;
                 })
                 .collect(Collectors.toList());
-        itemRepo.saveAll(items);
+        itemRepo.saveAll(savedItems);
+        List<OrderItemDTO> dtoItems = savedItems.stream()
+                .map(oi -> OrderItemDTO.builder()
+                        .name(oi.getMenu().getName())
+                        .quantity(oi.getQuantity())
+                        .build())
+                .collect(Collectors.toList());
 
-        // 4) 방금 저장된 주문을 다시 로드하여 items 포함 DTO로 변환
-        Order fullOrder = orderRepo.findById(order.getId())
-                .orElseThrow(() -> new ReportableError(500, "주문 저장 후 조회에 실패했습니다."));
-        return OrderResponse.from(fullOrder);
+        return new OrderResponse(
+                order.getId(),
+                order.getStatus().name(),
+                dtoItems
+        );
     }
 
+    /* --------------- 주문 상태 조회 --------------- */
     public OrderResponse get(Long orderId) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문을 찾을 수 없습니다."));
@@ -76,21 +85,18 @@ public class OrderService {
 
     /* --------------- 주문 상태 변경 --------------- */
     public OrderResponse updateStatus(Long orderId, String status) {
-        // 1) 기존 주문 조회
         Order origin = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        // 2) builder로만 새 엔티티 생성 (setter 사용 없음)
         Order updated = Order.builder()
                 .id(origin.getId())
                 .table(origin.getTable())
                 .status(OrderStatus.valueOf(status))
                 .createdAt(origin.getCreatedAt())
-                .items(origin.getItems())
+                .items(origin.getItems())  // origin.getItems()는 DB에서 로드되므로 null 아님
                 .build();
         orderRepo.save(updated);
 
-        // 3) 변환 및 반환
         return OrderResponse.from(updated);
     }
 
