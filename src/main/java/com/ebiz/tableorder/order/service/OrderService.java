@@ -37,55 +37,61 @@ public class OrderService {
 
     /* ---------------- 주문 생성 ---------------- */
     public OrderResponse create(OrderRequest req) {
-
-        final Table table = tableRepo.findByTableNumber(req.getTableNumber())
+        // 1) 테이블 조회
+        Table table = tableRepo.findByTableNumber(req.getTableNumber())
                 .orElseThrow(() -> new ReportableError(404, "테이블을 찾을 수 없습니다."));
 
-        final Order order = Order.builder()
+        // 2) 주문 엔티티 생성 및 저장 (PK 확보)
+        Order order = Order.builder()
                 .table(table)
                 .status(OrderStatus.WAITING)
-                .build();                          // ← 한 번만 생성 (final)
+                .build();
+        orderRepo.save(order);
 
-        /* OrderItem 리스트 생성 ― order 참조 */
+        // 3) 주문 아이템 생성 및 저장
         List<OrderItem> items = req.getItems().stream()
                 .map(io -> {
                     Menu menu = menuRepo.findById(io.getMenuId())
                             .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
                     return OrderItem.builder()
-                            .order(order)         // 관계 지정
+                            .order(order)
                             .menu(menu)
                             .quantity(io.getQuantity())
                             .build();
                 })
                 .collect(Collectors.toList());
-
-        /* 먼저 주문 저장 → PK 확보 */
-        orderRepo.save(order);
-
-        /* 아이템 일괄 저장 (Order FK 포함) */
         itemRepo.saveAll(items);
 
-        return new OrderResponse(order.getId(), order.getStatus().name());
+        // 4) 방금 저장된 주문을 다시 로드하여 items 포함 DTO로 변환
+        Order fullOrder = orderRepo.findById(order.getId())
+                .orElseThrow(() -> new ReportableError(500, "주문 저장 후 조회에 실패했습니다."));
+        return OrderResponse.from(fullOrder);
+    }
+
+    public OrderResponse get(Long orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new ReportableError(404, "주문을 찾을 수 없습니다."));
+        return OrderResponse.from(order);
     }
 
     /* --------------- 주문 상태 변경 --------------- */
     public OrderResponse updateStatus(Long orderId, String status) {
-
+        // 1) 기존 주문 조회
         Order origin = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        OrderStatus newStatus = OrderStatus.valueOf(status);
-
+        // 2) builder로만 새 엔티티 생성 (setter 사용 없음)
         Order updated = Order.builder()
                 .id(origin.getId())
                 .table(origin.getTable())
-                .status(newStatus)
+                .status(OrderStatus.valueOf(status))
                 .createdAt(origin.getCreatedAt())
-                .items(origin.getItems())   // 기존 아이템 그대로
+                .items(origin.getItems())
                 .build();
-
         orderRepo.save(updated);
-        return new OrderResponse(updated.getId(), updated.getStatus().name());
+
+        // 3) 변환 및 반환
+        return OrderResponse.from(updated);
     }
 
     /* --------------- 오늘 전체 주문 --------------- */

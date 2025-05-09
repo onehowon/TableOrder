@@ -48,4 +48,12 @@ public class CustomerController {
         TableOrderResponse resp = orderService.getByTableToday(tableNumber);
         return ResponseEntity.ok(CommonResponse.success(resp, "주문 조회"));
     }
+
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<CommonResponse<OrderResponse>> getOrderStatus(
+            @PathVariable Long orderId
+    ) {
+        OrderResponse resp = orderService.get(orderId);
+        return ResponseEntity.ok(CommonResponse.success(resp, "주문 상태 조회"));
+    }
 }
