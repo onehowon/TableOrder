@@ -79,11 +79,19 @@ public class MenuService {
     public void deactivate(Long id) {
         Menu menu = menuRepo.findById(id)
                 .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
-        // setter 없이 builder 패턴을 원하시면 toBuilder() 사용
         Menu updated = menu.toBuilder()
                 .isAvailable(false)
                 .build();
         menuRepo.save(updated);
     }
 
+    @Transactional
+    public void activate(Long id) {
+        Menu menu = menuRepo.findById(id)
+                .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
+        Menu updated = menu.toBuilder()
+                .isAvailable(true)
+                .build();
+        menuRepo.save(updated);
+    }
 }

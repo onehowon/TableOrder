@@ -105,4 +105,10 @@ public class AdminController {
         menuService.deactivate(menuId);
         return ResponseEntity.ok(CommonResponse.success(null, "메뉴 비활성화 완료"));
     }
+
+    @PutMapping("/menus/{menuId}/activate")
+    public ResponseEntity<CommonResponse<Void>> activateMenu(@PathVariable Long menuId) {
+        menuService.activate(menuId);
+        return ResponseEntity.ok(CommonResponse.success(null, "메뉴 활성화 완료"));
+    }
 }
