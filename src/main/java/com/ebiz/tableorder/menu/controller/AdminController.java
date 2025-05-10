@@ -43,7 +43,6 @@ public class AdminController {
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 등록 완료"));
     }
 
-
     @PutMapping(value = "/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponse<MenuDTO>> updateMenu(
             @PathVariable Long menuId,
