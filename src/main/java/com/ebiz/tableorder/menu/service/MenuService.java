@@ -1,11 +1,12 @@
 package com.ebiz.tableorder.menu.service;
 
 import com.ebiz.tableorder.common.ReportableError;
-import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.dto.MenuDTO;
 import com.ebiz.tableorder.menu.dto.MenuRequest;
+import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.entity.Menu;
 import com.ebiz.tableorder.menu.repository.MenuRepository;
+import com.ebiz.tableorder.order.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class MenuService {
     private final MenuRepository menuRepo;
+    private final OrderRepository orderRepo;
 
     public MenuDTO create(MenuRequest req, String imageUrl) {
         Menu menu = Menu.builder()
@@ -94,4 +96,6 @@ public class MenuService {
                 .build();
         menuRepo.save(updated);
     }
+
+
 }

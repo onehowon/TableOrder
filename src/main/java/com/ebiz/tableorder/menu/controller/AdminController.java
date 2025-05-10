@@ -111,4 +111,12 @@ public class AdminController {
         menuService.activate(menuId);
         return ResponseEntity.ok(CommonResponse.success(null, "메뉴 활성화 완료"));
     }
+
+    // AdminController.java
+    @GetMapping("/tables/summary-all")
+    public ResponseEntity<CommonResponse<List<TableSummaryResponse>>> summaryAll() {
+        List<TableSummaryResponse> list = tableService.getAllTablesSummaryToday();
+        return ResponseEntity.ok(CommonResponse.success(list, "전체 테이블 요약 조회 완료"));
+    }
+
 }
