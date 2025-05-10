@@ -7,6 +7,7 @@ import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.oci.service.OciStorageService;
 import com.ebiz.tableorder.order.dto.*;
+import com.ebiz.tableorder.order.repository.OrderRepository;
 import com.ebiz.tableorder.order.service.OrderService;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
@@ -28,6 +29,7 @@ public class AdminController {
     private final OrderService orderService;
     private final TableService tableService;
     private final OciStorageService storageService;
+    private final OrderRepository orderRepository;
 
     @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponse<MenuDTO>> createMenu(
@@ -131,6 +133,12 @@ public class AdminController {
     public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
         orderService.postRequest(req);  // OrderService에 병합
         return CommonResponse.success(null, "요청 전송 완료");
+    }
+
+    @GetMapping("/alerts")
+    public CommonResponse<List<OrderAlertDTO>> getAlerts() {
+        var dtos = orderService.getAlerts();
+        return CommonResponse.success(dtos, "새 주문 알림 조회 완료");
     }
 
 }

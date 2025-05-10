@@ -3,7 +3,6 @@ package com.ebiz.tableorder.order.service;
 import com.ebiz.tableorder.common.ReportableError;
 import com.ebiz.tableorder.menu.entity.Menu;
 import com.ebiz.tableorder.menu.repository.MenuRepository;
-import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.order.dto.*;
 import com.ebiz.tableorder.order.entity.Order;
 import com.ebiz.tableorder.order.entity.OrderItem;
@@ -148,6 +147,30 @@ public class OrderService {
 
     public void postRequest(RequestDTO req) {
         // TODO: DB 저장 or 푸시 알림 로직
+    }
+
+    public List<OrderAlertDTO> getAlerts() {
+        List<Order> newOrders = orderRepo.findByStatus(OrderStatus.WAITING);
+        return newOrders.stream()
+                .map(o -> {
+                    // 1) OrderItem → DTO.Item 변환
+                    List<OrderAlertDTO.Item> items = o.getItems().stream()
+                            .map(i -> new OrderAlertDTO.Item(
+                                    // 실제 엔티티 필드명에 맞춰서 getMenu().getName() 사용
+                                    i.getMenu().getName(),
+                                    i.getQuantity()
+                            ))
+                            .collect(Collectors.toList());
+
+                    // 2) OrderAlertDTO 생성
+                    return new OrderAlertDTO(
+                            // 실제 엔티티 필드명에 맞춰서 getTable().getTableNumber() 사용
+                            o.getTable().getTableNumber(),
+                            items,
+                            o.getCreatedAt()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
 
