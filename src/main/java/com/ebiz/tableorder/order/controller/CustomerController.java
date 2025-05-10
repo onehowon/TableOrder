@@ -7,6 +7,7 @@ import com.ebiz.tableorder.order.dto.OrderRequest;
 import com.ebiz.tableorder.order.dto.OrderResponse;
 import com.ebiz.tableorder.order.dto.RequestDTO;
 import com.ebiz.tableorder.order.service.OrderService;
+import com.ebiz.tableorder.order.service.RequestService;
 import com.ebiz.tableorder.table.dto.TableOrderResponse;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
@@ -27,6 +28,7 @@ public class CustomerController {
     private final MenuService menuService;
     private final OrderService orderService;
     private final TableService tableService;
+    private final RequestService requestService;
 
     /* ---------- 메뉴 ---------- */
 
@@ -71,7 +73,7 @@ public class CustomerController {
 
     @PostMapping("/requests")
     public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
-        orderService.postRequest(req);
+        requestService.postRequest(req);
         return CommonResponse.success(null, "요청 전송 완료");
     }
 

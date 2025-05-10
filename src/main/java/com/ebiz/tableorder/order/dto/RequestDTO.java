@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestDTO {
+    private Integer tableNumber;
     private String type;
-    private String message;
 }
