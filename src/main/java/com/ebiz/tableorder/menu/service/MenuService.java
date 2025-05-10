@@ -68,4 +68,11 @@ public class MenuService {
         return toDto(menu);
     }
 
+    public void delete(Long id) {
+        if (!menuRepo.existsById(id)) {
+            throw new ReportableError(404, "삭제할 메뉴를 찾을 수 없습니다.");
+        }
+        menuRepo.deleteById(id);
+    }
+
 }

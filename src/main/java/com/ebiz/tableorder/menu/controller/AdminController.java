@@ -93,4 +93,10 @@ public class AdminController {
         List<MenuDTO> list = menuService.getAll();
         return ResponseEntity.ok(CommonResponse.success(list, "메뉴 목록 조회"));
     }
+
+    @DeleteMapping("/menus/{menuId}")
+    public ResponseEntity<CommonResponse<Void>> deleteMenu(@PathVariable Long menuId) {
+        menuService.delete(menuId);
+        return ResponseEntity.ok(CommonResponse.success(null, "메뉴 삭제 완료"));
+    }
 }
