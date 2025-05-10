@@ -87,4 +87,10 @@ public class AdminController {
         TableSummaryResponse resp = tableService.getSummaryToday(tableNumber);
         return ResponseEntity.ok(CommonResponse.success(resp, "요약 조회 완료"));
     }
+
+    @GetMapping("/menus")
+    public ResponseEntity<CommonResponse<List<MenuDTO>>> listMenus() {
+        List<MenuDTO> list = menuService.getAll();
+        return ResponseEntity.ok(CommonResponse.success(list, "메뉴 목록 조회"));
+    }
 }
