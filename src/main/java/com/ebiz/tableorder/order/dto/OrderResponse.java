@@ -4,7 +4,9 @@ import com.ebiz.tableorder.order.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
@@ -16,7 +18,9 @@ public class OrderResponse {
     private final List<OrderItemDTO> items;
 
     public static OrderResponse from(Order order) {
-        List<OrderItemDTO> dtoItems = order.getItems().stream()
+        List<OrderItemDTO> dtoItems = Optional.ofNullable(order.getItems())
+                .orElse(Collections.emptyList())
+                .stream()
                 .map(oi -> new OrderItemDTO(
                         oi.getMenu().getName(),
                         oi.getQuantity()
@@ -30,4 +34,5 @@ public class OrderResponse {
                 dtoItems
         );
     }
+
 }

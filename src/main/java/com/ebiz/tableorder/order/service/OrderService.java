@@ -41,14 +41,14 @@ public class OrderService {
         Table table = tableRepo.findByTableNumber(req.getTableNumber())
                 .orElseThrow(() -> new ReportableError(404, "테이블을 찾을 수 없습니다."));
 
-        // 2) 주문 엔티티 생성 및 저장 (PK 확보)
+        // 2) 주문 엔티티 생성 후 저장 (PK 확보)
         Order order = Order.builder()
                 .table(table)
                 .status(OrderStatus.WAITING)
                 .build();
         orderRepo.save(order);
 
-        // 3) 주문 아이템 생성 및 저장
+        // 3) 주문 아이템 생성 & 저장
         List<OrderItem> items = req.getItems().stream()
                 .map(io -> {
                     Menu menu = menuRepo.findById(io.getMenuId())
@@ -62,9 +62,11 @@ public class OrderService {
                 .collect(Collectors.toList());
         itemRepo.saveAll(items);
 
-        // 4) 방금 저장된 주문을 다시 로드하여 items 포함 DTO로 변환
+        // 4) **다시 로드**: 연관된 items 컬렉션이 채워진 새로운 엔티티를 조회합니다.
         Order fullOrder = orderRepo.findById(order.getId())
                 .orElseThrow(() -> new ReportableError(500, "주문 저장 후 조회에 실패했습니다."));
+
+        // 5) DTO 변환
         return OrderResponse.from(fullOrder);
     }
 
