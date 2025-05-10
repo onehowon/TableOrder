@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class OrderResponse {
     private final Long orderId;
     private final String status;
+    private final int tableNumber;
     private final List<OrderItemDTO> items;
 
     public static OrderResponse from(Order order) {
@@ -25,6 +26,7 @@ public class OrderResponse {
         return new OrderResponse(
                 order.getId(),
                 order.getStatus().name(),
+                order.getTable().getTableNumber(),
                 dtoItems
         );
     }

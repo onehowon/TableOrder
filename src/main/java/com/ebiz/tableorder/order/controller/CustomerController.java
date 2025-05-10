@@ -7,6 +7,8 @@ import com.ebiz.tableorder.order.dto.OrderRequest;
 import com.ebiz.tableorder.order.dto.OrderResponse;
 import com.ebiz.tableorder.order.service.OrderService;
 import com.ebiz.tableorder.table.dto.TableOrderResponse;
+import com.ebiz.tableorder.table.dto.TableSummaryResponse;
+import com.ebiz.tableorder.table.service.TableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ public class CustomerController {
 
     private final MenuService menuService;
     private final OrderService orderService;
+    private final TableService tableService;
 
     /* ---------- 메뉴 ---------- */
 
@@ -55,5 +58,13 @@ public class CustomerController {
     ) {
         OrderResponse resp = orderService.get(orderId);
         return ResponseEntity.ok(CommonResponse.success(resp, "주문 상태 조회"));
+    }
+
+    @GetMapping("/tables/{tableNumber}/summary")
+    public ResponseEntity<CommonResponse<TableSummaryResponse>> summary(
+            @PathVariable int tableNumber
+    ) {
+        TableSummaryResponse resp = tableService.getSummaryToday(tableNumber);
+        return ResponseEntity.ok(CommonResponse.success(resp, "테이블 요약 조회"));
     }
 }
