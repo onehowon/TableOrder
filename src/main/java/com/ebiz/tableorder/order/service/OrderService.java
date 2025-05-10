@@ -4,10 +4,7 @@ import com.ebiz.tableorder.common.ReportableError;
 import com.ebiz.tableorder.menu.entity.Menu;
 import com.ebiz.tableorder.menu.repository.MenuRepository;
 import com.ebiz.tableorder.menu.service.MenuService;
-import com.ebiz.tableorder.order.dto.OrderDetailDTO;
-import com.ebiz.tableorder.order.dto.OrderItemDTO;
-import com.ebiz.tableorder.order.dto.OrderRequest;
-import com.ebiz.tableorder.order.dto.OrderResponse;
+import com.ebiz.tableorder.order.dto.*;
 import com.ebiz.tableorder.order.entity.Order;
 import com.ebiz.tableorder.order.entity.OrderItem;
 import com.ebiz.tableorder.order.entity.OrderStatus;
@@ -77,23 +74,21 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
-    /* --------------- 주문 상태 변경 --------------- */
-    public OrderResponse updateStatus(Long orderId, String status) {
-        // 1) 기존 주문 조회
+    /* --------------- 주문 상태 변경 (+ETA) --------------- */
+    public OrderResponse updateStatus(Long orderId, String status, Integer estimatedTime) {
         Order origin = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        // 2) builder로만 새 엔티티 생성 (setter 사용 없음)
         Order updated = Order.builder()
                 .id(origin.getId())
                 .table(origin.getTable())
                 .status(OrderStatus.valueOf(status))
+                .estimatedTime(estimatedTime)
                 .createdAt(origin.getCreatedAt())
                 .items(origin.getItems())
                 .build();
-        orderRepo.save(updated);
 
-        // 3) 변환 및 반환
+        orderRepo.save(updated);
         return OrderResponse.from(updated);
     }
 
@@ -134,7 +129,28 @@ public class OrderService {
                 .build();
     }
 
-    /* ---------- 엔티티 → OrderDetailDTO 매핑 ---------- */
+    @Transactional(readOnly = true)
+    public SalesSummaryDTO getTodaySummary() {
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to   = from.plusDays(1);
+        var orders = orderRepo.findByCreatedAtBetween(from, to);
+        long cnt = orders.size();
+        long sum = orders.stream()
+                .flatMap(o -> o.getItems().stream())
+                .mapToLong(i -> i.getMenu().getPrice().longValue() * i.getQuantity())
+                .sum();
+
+        return SalesSummaryDTO.builder()
+                .count(cnt)
+                .totalAmount(sum)
+                .build();
+    }
+
+    public void postRequest(RequestDTO req) {
+        // TODO: DB 저장 or 푸시 알림 로직
+    }
+
+
     private OrderDetailDTO toDetailDto(Order o) {
         List<OrderItemDTO> itemDtos = o.getItems().stream()
                 .map(oi -> OrderItemDTO.builder()

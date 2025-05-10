@@ -28,6 +28,9 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Column(name="estimated_time")
+    private Integer estimatedTime;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -14,19 +14,15 @@ public class TableSummaryResponse {
     private final int totalOrders;
     private final int totalAmount;
     private final List<ItemSummary> items;
-
-    @Getter @Builder @AllArgsConstructor
+    @Getter
+    @Builder
+    @AllArgsConstructor
     public static class ItemSummary {
         private final String name;
         private final int quantity;
         private final int totalPrice;
-
-        // 집계용 합산
-        public static ItemSummary combine(ItemSummary a, ItemSummary b) {
-            return new ItemSummary(
-                    a.name,
-                    a.quantity + b.quantity,
-                    a.totalPrice + b.totalPrice);
+        public static ItemSummary combine(ItemSummary a, ItemSummary b){
+            return new ItemSummary(a.name, a.quantity+b.quantity, a.totalPrice+b.totalPrice);
         }
     }
 }

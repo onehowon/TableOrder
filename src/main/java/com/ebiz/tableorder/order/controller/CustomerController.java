@@ -5,6 +5,7 @@ import com.ebiz.tableorder.menu.dto.MenuDTO;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.order.dto.OrderRequest;
 import com.ebiz.tableorder.order.dto.OrderResponse;
+import com.ebiz.tableorder.order.dto.RequestDTO;
 import com.ebiz.tableorder.order.service.OrderService;
 import com.ebiz.tableorder.table.dto.TableOrderResponse;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
@@ -67,4 +68,11 @@ public class CustomerController {
         TableSummaryResponse resp = tableService.getSummaryToday(tableNumber);
         return ResponseEntity.ok(CommonResponse.success(resp, "테이블 요약 조회"));
     }
+
+    @PostMapping("/requests")
+    public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
+        orderService.postRequest(req);
+        return CommonResponse.success(null, "요청 전송 완료");
+    }
+
 }

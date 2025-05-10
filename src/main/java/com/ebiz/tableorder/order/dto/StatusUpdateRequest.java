@@ -1,5 +1,6 @@
 package com.ebiz.tableorder.order.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,5 +9,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class StatusUpdateRequest {
-    private final String status;
+    @NotBlank
+    private String status;
+    private Integer estimatedTime;
 }

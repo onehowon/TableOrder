@@ -15,24 +15,16 @@ public class OrderResponse {
     private final Long orderId;
     private final String status;
     private final int tableNumber;
+    private final Integer estimatedTime;
     private final List<OrderItemDTO> items;
 
-    public static OrderResponse from(Order order) {
-        List<OrderItemDTO> dtoItems = Optional.ofNullable(order.getItems())
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(oi -> new OrderItemDTO(
-                        oi.getMenu().getName(),
-                        oi.getQuantity()
-                ))
-                .collect(Collectors.toList());
-
+    public static OrderResponse from(Order o) {
+        List<OrderItemDTO> items = Optional.ofNullable(o.getItems()).orElse(List.of()).stream()
+                .map(i->new OrderItemDTO(i.getMenu().getName(), i.getQuantity()))
+                .toList();
         return new OrderResponse(
-                order.getId(),
-                order.getStatus().name(),
-                order.getTable().getTableNumber(),
-                dtoItems
+                o.getId(), o.getStatus().name(), o.getEstimatedTime(),
+                o.getTable().getTableNumber(), items
         );
     }
-
 }

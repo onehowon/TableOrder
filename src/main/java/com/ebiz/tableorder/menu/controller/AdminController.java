@@ -6,9 +6,7 @@ import com.ebiz.tableorder.menu.dto.MenuRequest;
 import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.oci.service.OciStorageService;
-import com.ebiz.tableorder.order.dto.OrderDetailDTO;
-import com.ebiz.tableorder.order.dto.OrderResponse;
-import com.ebiz.tableorder.order.dto.StatusUpdateRequest;
+import com.ebiz.tableorder.order.dto.*;
 import com.ebiz.tableorder.order.service.OrderService;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
@@ -66,18 +64,26 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<CommonResponse<List<OrderDetailDTO>>> getAllOrders() {
-        List<OrderDetailDTO> list = orderService.getAllToday();
-        return ResponseEntity.ok(CommonResponse.success(list, "주문 리스트 조회"));
+    public CommonResponse<List<OrderDetailDTO>> listOrders(){
+        return CommonResponse.success(orderService.getAllToday(), "주문 리스트 조회 완료");
     }
 
     @PutMapping("/orders/{orderId}/status")
-    public ResponseEntity<CommonResponse<OrderResponse>>
-    updateStatus(@PathVariable Long orderId,
-                 @RequestBody @Valid StatusUpdateRequest req) {
+    public CommonResponse<OrderResponse> updateStatus(
+            @PathVariable Long orderId,
+            @RequestBody @Valid StatusUpdateRequest req
+    ) {
+        OrderResponse resp = orderService.updateStatus(
+                orderId,
+                req.getStatus(),
+                req.getEstimatedTime()   // ← ETA 전달
+        );
+        return CommonResponse.success(resp, "상태 변경 완료");
+    }
 
-        OrderResponse resp = orderService.updateStatus(orderId, req.getStatus());
-        return ResponseEntity.ok(CommonResponse.success(resp, "상태 변경 완료"));
+    @GetMapping("/orders/today-summary")
+    public CommonResponse<SalesSummaryDTO> salesSummary(){
+        return CommonResponse.success(orderService.getTodaySummary(), "매출 요약");
     }
 
     @GetMapping("/tables/{tableNumber}/summary")
@@ -112,11 +118,20 @@ public class AdminController {
         return ResponseEntity.ok(CommonResponse.success(null, "메뉴 활성화 완료"));
     }
 
-    // AdminController.java
+    @GetMapping("/tables/summary")
+    public CommonResponse<TableSummaryResponse> tableSummary(@RequestParam int table){
+        return CommonResponse.success(tableService.getSummaryToday(table),"테이블 요약");
+    }
+
     @GetMapping("/tables/summary-all")
-    public ResponseEntity<CommonResponse<List<TableSummaryResponse>>> summaryAll() {
-        List<TableSummaryResponse> list = tableService.getAllTablesSummaryToday();
-        return ResponseEntity.ok(CommonResponse.success(list, "전체 테이블 요약 조회 완료"));
+    public CommonResponse<List<TableSummaryResponse>> tableSummaryAll(){
+        return CommonResponse.success(tableService.getAllTablesSummaryToday(),"전체 테이블 요약");
+    }
+
+    @PostMapping("/requests")
+    public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
+        orderService.postRequest(req);  // OrderService에 병합
+        return CommonResponse.success(null, "요청 전송 완료");
     }
 
 }
