@@ -77,11 +77,8 @@ public class AdminController {
             @PathVariable Long orderId,
             @RequestBody @Valid StatusUpdateRequest req
     ) {
-        OrderResponse resp = orderService.updateStatus(
-                orderId,
-                req.getStatus(),
-                req.getEstimatedTime()   // ← ETA 전달
-        );
+        // 여기서 String, Integer 따로 넘기지 말고, DTO 통째로 넘깁니다
+        OrderResponse resp = orderService.updateStatus(orderId, req);
         return CommonResponse.success(resp, "상태 변경 완료");
     }
 

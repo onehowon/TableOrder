@@ -74,20 +74,22 @@ public class OrderService {
     }
 
     /* --------------- 주문 상태 변경 (+ETA) --------------- */
-    public OrderResponse updateStatus(Long orderId, String status, Integer estimatedTime) {
+    public OrderResponse updateStatus(Long orderId, StatusUpdateRequest req) {
+        // 1) 기존 주문이 존재하는지 확인
         Order origin = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        Order updated = Order.builder()
-                .id(origin.getId())
-                .table(origin.getTable())
-                .status(OrderStatus.valueOf(status))
-                .estimatedTime(estimatedTime)
-                .createdAt(origin.getCreatedAt())
-                .items(origin.getItems())
-                .build();
+        // 2) JPQL update 메서드 호출
+        OrderStatus newStatus = OrderStatus.valueOf(req.getStatus());
+        Integer eta = newStatus == OrderStatus.COOKING ? req.getEstimatedTime() : null;
+        int updatedCount = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
+        if (updatedCount != 1) {
+            throw new ReportableError(500, "주문 상태 업데이트에 실패했습니다.");
+        }
 
-        orderRepo.save(updated);
+        // 3) 변경된 엔티티를 다시 조회해서 DTO 변환
+        Order updated = orderRepo.findById(orderId)
+                .orElseThrow(() -> new ReportableError(500, "업데이트 후 주문 조회에 실패했습니다."));
         return OrderResponse.from(updated);
     }
 
