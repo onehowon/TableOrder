@@ -29,15 +29,15 @@ public class StatsService {
         long totalOrders  = orderRepo.countByDate(today);
         long totalTables  = orderRepo.countDistinctCustomersByDate(today);
 
-        // raw 결과를 SalesDataPoint 리스트로 매핑
         List<SalesDataPoint> salesByHour =
                 itemRepo.sumRevenueByHourRaw(today).stream()
                         .map(arr -> {
-                            Integer hour      = ((Number) arr[0]).intValue();
-                            BigDecimal sum    = (BigDecimal) arr[1];
+                            Integer hour   = ((Number) arr[0]).intValue();
+                            long    sum    = ((Number) arr[1]).longValue();   // ← long 으로 받아오기
                             return new SalesDataPoint(hour, sum);
                         })
                         .collect(Collectors.toList());
+
 
         return new SalesStatsDTO(
                 totalTables,
