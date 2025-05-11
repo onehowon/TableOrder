@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Getter
 public class Order {
@@ -31,6 +30,9 @@ public class Order {
     @Column(name="estimated_time")
     private Integer estimatedTime;
 
+    @Column(nullable = false, updatable = true)
+    private boolean cleared = false;    // ← 추가: 정산 완료 플래그
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -47,5 +49,23 @@ public class Order {
         this.updatedAt = LocalDateTime.now();
     }
 
-
+    // Builder에서 cleared 기본값 쓰도록
+    @Builder
+    public Order(Long id,
+                 com.ebiz.tableorder.table.entity.Table table,
+                 OrderStatus status,
+                 Integer estimatedTime,
+                 boolean cleared,
+                 LocalDateTime createdAt,
+                 LocalDateTime updatedAt,
+                 List<OrderItem> items) {
+        this.id            = id;
+        this.table         = table;
+        this.status        = status;
+        this.estimatedTime = estimatedTime;
+        this.cleared       = cleared;
+        this.createdAt     = createdAt;
+        this.updatedAt     = updatedAt;
+        this.items         = items;
+    }
 }

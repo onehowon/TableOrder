@@ -31,21 +31,18 @@ public class OrderService {
     private final TableRepository     tableRepo;
     private final MenuRepository      menuRepo;
 
-    /* ---------------- 주문 생성 ---------------- */
+    /* ---------------- 주문 생성 (변경 없음) ---------------- */
     public OrderResponse create(OrderRequest req) {
-        // 1) 테이블 조회
         Table table = tableRepo.findByTableNumber(req.getTableNumber())
                 .orElseThrow(() -> new ReportableError(404, "테이블을 찾을 수 없습니다."));
 
-        // 2) 주문 엔티티 생성 후 저장 (PK 확보)
         Order order = Order.builder()
                 .table(table)
                 .status(OrderStatus.WAITING)
                 .build();
         orderRepo.save(order);
 
-        // 3) 주문 아이템 생성 & 저장
-        List<OrderItem> items = req.getItems().stream()
+        var items = req.getItems().stream()
                 .map(io -> {
                     Menu menu = menuRepo.findById(io.getMenuId())
                             .orElseThrow(() -> new ReportableError(404, "메뉴를 찾을 수 없습니다."));
@@ -58,78 +55,74 @@ public class OrderService {
                 .collect(Collectors.toList());
         itemRepo.saveAll(items);
 
-        // 4) **다시 로드**: 연관된 items 컬렉션이 채워진 새로운 엔티티를 조회합니다.
-        Order fullOrder = orderRepo.findById(order.getId())
-                .orElseThrow(() -> new ReportableError(500, "주문 저장 후 조회에 실패했습니다."));
-
-        // 5) DTO 변환
-        return OrderResponse.from(fullOrder);
+        Order full = orderRepo.findById(order.getId())
+                .orElseThrow(() -> new ReportableError(500, "저장 후 조회에 실패했습니다."));
+        return OrderResponse.from(full);
     }
 
-    /* --------------- 주문 단건 조회 --------------- */
+    /* --------------- 주문 단건 조회 (변경 없음) --------------- */
     public OrderResponse get(Long orderId) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문을 찾을 수 없습니다."));
         return OrderResponse.from(order);
     }
 
-    /* --------------- 주문 상태 변경 (+ETA) --------------- */
+    /* --------------- 주문 상태 변경 (+ ETA) --------------- */
     public OrderResponse updateStatus(Long orderId, StatusUpdateRequest req) {
-        // 1) 기존 주문이 존재하는지 확인
-        Order origin = orderRepo.findById(orderId)
+        // 1) 존재 확인
+        orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        // 2) JPQL update 메서드 호출
+        // 2) JPQL 업데이트 호출
         OrderStatus newStatus = OrderStatus.valueOf(req.getStatus());
-        Integer eta = newStatus == OrderStatus.COOKING ? req.getEstimatedTime() : null;
-        int updatedCount = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
-        if (updatedCount != 1) {
+        Integer eta = (newStatus == OrderStatus.COOKING) ? req.getEstimatedTime() : null;
+        int updated = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
+        if (updated != 1) {
             throw new ReportableError(500, "주문 상태 업데이트에 실패했습니다.");
         }
 
-        // 3) 변경된 엔티티를 다시 조회해서 DTO 변환
-        Order updated = orderRepo.findById(orderId)
-                .orElseThrow(() -> new ReportableError(500, "업데이트 후 주문 조회에 실패했습니다."));
-        return OrderResponse.from(updated);
+        // 3) 변경 후 엔티티 재조회
+        Order after = orderRepo.findById(orderId)
+                .orElseThrow(() -> new ReportableError(500, "업데이트 후 조회에 실패했습니다."));
+        return OrderResponse.from(after);
     }
 
-    /* --------------- 오늘 전체 주문 조회 --------------- */
+    /* ------ 오늘 전체 주문 조회 (cleared=false) ------ */
     @Transactional(readOnly = true)
     public List<OrderDetailDTO> getAllToday() {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
-
-        return orderRepo.findByCreatedAtBetween(from, to)
+        return orderRepo.findByCreatedAtBetweenAndClearedFalse(from, to)
                 .stream()
                 .map(this::toDetailDto)
                 .collect(Collectors.toList());
     }
 
-    /* --------- 특정 테이블의 오늘 주문 목록 -------- */
+    /* -- 특정 테이블 오늘 주문 조회 (cleared=false) -- */
     @Transactional(readOnly = true)
     public TableOrderResponse getByTableToday(int tableNumber) {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
+        var orders = orderRepo
+                .findByTable_TableNumberAndCreatedAtBetweenAndClearedFalse(tableNumber, from, to);
 
-        List<Order> orders = orderRepo
-                .findByTable_TableNumberAndCreatedAtBetween(tableNumber, from, to);
-
-        int totalAmount = orders.stream()
+        int total = orders.stream()
                 .flatMap(o -> o.getItems().stream())
-                .mapToInt(oi -> oi.getMenu().getPrice().intValue() * oi.getQuantity())
+                .mapToInt(i -> i.getMenu().getPrice().intValue() * i.getQuantity())
                 .sum();
 
-        List<OrderDetailDTO> dtoList = orders.stream()
+        var dtoList = orders.stream()
                 .map(this::toDetailDto)
                 .collect(Collectors.toList());
 
         return TableOrderResponse.builder()
                 .tableNumber(tableNumber)
-                .totalAmount(totalAmount)
+                .totalAmount(total)
                 .orders(dtoList)
                 .build();
     }
 
+    /* ------ 오늘 매출 요약 (cleared 무시) ------ */
     @Transactional(readOnly = true)
     public SalesSummaryDTO getTodaySummary() {
         LocalDateTime from = LocalDate.now().atStartOfDay();
@@ -147,37 +140,24 @@ public class OrderService {
                 .build();
     }
 
-    public void postRequest(RequestDTO req) {
-        // TODO: DB 저장 or 푸시 알림 로직
-    }
-
+    /* ------ 새 주문 알림 (WAITING & cleared=false) ------ */
     public List<OrderAlertDTO> getAlerts() {
-        List<Order> newOrders = orderRepo.findByStatus(OrderStatus.WAITING);
-        return newOrders.stream()
+        return orderRepo.findByStatusAndClearedFalse(OrderStatus.WAITING)
+                .stream()
                 .map(o -> {
-                    // 1) OrderItem → DTO.Item 변환
-                    List<OrderAlertDTO.Item> items = o.getItems().stream()
-                            .map(i -> new OrderAlertDTO.Item(
-                                    // 실제 엔티티 필드명에 맞춰서 getMenu().getName() 사용
-                                    i.getMenu().getName(),
-                                    i.getQuantity()
-                            ))
+                    var items = o.getItems().stream()
+                            .map(i -> new OrderAlertDTO.Item(i.getMenu().getName(), i.getQuantity()))
                             .collect(Collectors.toList());
-
-                    // 2) OrderAlertDTO 생성
-                    return new OrderAlertDTO(
-                            // 실제 엔티티 필드명에 맞춰서 getTable().getTableNumber() 사용
-                            o.getTable().getTableNumber(),
+                    return new OrderAlertDTO(o.getTable().getTableNumber(),
                             items,
-                            o.getCreatedAt()
-                    );
+                            o.getCreatedAt());
                 })
                 .collect(Collectors.toList());
     }
 
-
+    /* ----- 엔티티 → DTO 변환 헬퍼 ----- */
     private OrderDetailDTO toDetailDto(Order o) {
-        List<OrderItemDTO> itemDtos = o.getItems().stream()
+        var itemDtos = o.getItems().stream()
                 .map(oi -> OrderItemDTO.builder()
                         .name(oi.getMenu().getName())
                         .quantity(oi.getQuantity())
@@ -192,8 +172,4 @@ public class OrderService {
                 .items(itemDtos)
                 .build();
     }
-
-
-
-
 }

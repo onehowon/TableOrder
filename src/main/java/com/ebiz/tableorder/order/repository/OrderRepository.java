@@ -15,55 +15,64 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    // 특정 테이블의 오늘 주문 목록
-    List<Order> findByTable_TableNumberAndCreatedAtBetween(
-            Integer tableNumber,
-            LocalDateTime start,
-            LocalDateTime end
+    List<Order> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    /** 상태 변경 + ETA 업데이트 (JPQL) */
+    @Modifying
+    @Query("""
+      update Order o
+         set o.status        = :status,
+             o.estimatedTime = :eta
+       where o.id = :orderId
+    """)
+    int updateStatusAndEta(
+            @Param("orderId") Long orderId,
+            @Param("status")  OrderStatus status,
+            @Param("eta")     Integer eta
     );
 
-    // 오늘 전체 주문
-    List<Order> findByCreatedAtBetween(
+    /** 오늘 삭제되지 않은 주문만 조회 (cleared=false) */
+    List<Order> findByCreatedAtBetweenAndClearedFalse(LocalDateTime from, LocalDateTime to);
+
+    /** 특정 테이블의 오늘 삭제되지 않은 주문만 조회 */
+    List<Order> findByTable_TableNumberAndCreatedAtBetweenAndClearedFalse(
+            Integer tableNumber,
             LocalDateTime from,
             LocalDateTime to
     );
 
-    // 특정 상태(예: WAITING) 주문만 조회
-    List<Order> findByStatus(OrderStatus status);
+    /** 알림용: WAITING & cleared=false */
+    List<Order> findByStatusAndClearedFalse(OrderStatus status);
 
-    // ── 오늘자 고객(테이블) 수 (중복 제외) ─────────────────────────
+    /** 매출 통계용 (cleared 무시) */
     @Query("""
       SELECT COUNT(DISTINCT o.table.tableNumber)
-      FROM   Order o
-      WHERE  FUNCTION('DATE', o.createdAt) = :today
+      FROM Order o
+      WHERE FUNCTION('DATE', o.createdAt) = :today
     """)
     long countDistinctCustomersByDate(@Param("today") LocalDate today);
 
-    // ── 오늘자 주문 건수 ─────────────────────────────────────────
-    @Query("""
-      SELECT COUNT(o)
-      FROM   Order o
-      WHERE  FUNCTION('DATE', o.createdAt) = :today
-    """)
-    long countByDate(@Param("today") LocalDate today);
 
-    // ── 주문 상태 + ETA 업데이트 (setter 없이 JPQL update) ────────────
+    /**
+     * 정산(테이블 초기화) 시에 cleared=true 로 플래그 세팅
+     */
     @Modifying
     @Query("""
-      UPDATE Order o
-        SET o.status        = :status,
-            o.estimatedTime = :eta
-      WHERE o.id = :id
+      update Order o
+         set o.cleared = true
+       where o.table.tableNumber = :tableNumber
+         and o.createdAt between :from and :to
     """)
-    int updateStatusAndEta(
-            @Param("id")     Long id,
-            @Param("status") OrderStatus status,
-            @Param("eta")    Integer estimatedTime
+    void markClearedByTableAndDate(
+            @Param("tableNumber") int tableNumber,
+            @Param("from") LocalDateTime from,
+            @Param("to")   LocalDateTime to
     );
 
-    @Modifying
-    @Query("delete from Order o where o.table.tableNumber = :tableNumber and o.createdAt between :from and :to")
-    void deleteByTable_TableNumberAndCreatedAtBetween(@Param("tableNumber") int tableNumber,
-                                                      @Param("from") LocalDateTime from,
-                                                      @Param("to")   LocalDateTime to);
+    @Query("""
+      SELECT COUNT(o)
+      FROM Order o
+      WHERE FUNCTION('DATE', o.createdAt) = :today
+    """)
+    long countByDate(@Param("today") LocalDate today);
 }

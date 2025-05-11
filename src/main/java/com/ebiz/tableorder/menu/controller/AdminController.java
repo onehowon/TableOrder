@@ -10,6 +10,7 @@ import com.ebiz.tableorder.oci.service.OciStorageService;
 import com.ebiz.tableorder.order.dto.*;
 import com.ebiz.tableorder.order.repository.OrderRepository;
 import com.ebiz.tableorder.order.service.OrderService;
+import com.ebiz.tableorder.order.service.RequestService;
 import com.ebiz.tableorder.order.service.StatsService;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
@@ -33,6 +34,7 @@ public class AdminController {
     private final OciStorageService storageService;
     private final OrderRepository orderRepository;
     private final StatsService statsService;
+    private final RequestService requestService;
 
     @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponse<MenuDTO>> createMenu(
@@ -72,12 +74,13 @@ public class AdminController {
         return CommonResponse.success(orderService.getAllToday(), "주문 리스트 조회 완료");
     }
 
+    /** 주문 상태 변경 (+ETA) */
     @PutMapping("/orders/{orderId}/status")
     public CommonResponse<OrderResponse> updateStatus(
             @PathVariable Long orderId,
-            @RequestBody @Valid StatusUpdateRequest req
+            @RequestBody @Valid StatusUpdateRequest req  // DTO 를 통째로 넘깁니다
     ) {
-        // 여기서 String, Integer 따로 넘기지 말고, DTO 통째로 넘깁니다
+        // service 의 시그니처에 맞춰 한 번에 request DTO 를 넘겨주세요
         OrderResponse resp = orderService.updateStatus(orderId, req);
         return CommonResponse.success(resp, "상태 변경 완료");
     }
@@ -131,7 +134,7 @@ public class AdminController {
 
     @PostMapping("/requests")
     public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
-        orderService.postRequest(req);  // OrderService에 병합
+        requestService.postRequest(req);
         return CommonResponse.success(null, "요청 전송 완료");
     }
 
@@ -149,6 +152,8 @@ public class AdminController {
     }
 
     @DeleteMapping("/tables/{tableNumber}/reset")
+
+
     public CommonResponse<Void> resetTable(@PathVariable int tableNumber) {
         tableService.resetTable(tableNumber);
         return CommonResponse.success(null, "테이블 초기화 완료");
