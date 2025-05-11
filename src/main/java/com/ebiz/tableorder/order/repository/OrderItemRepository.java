@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-    /** 오늘자 총 매출 (quantity * menu.price) */
+    /** 오늘자 총 매출 */
     @Query("""
       SELECT COALESCE(SUM(i.quantity * i.menu.price), 0)
       FROM OrderItem i
@@ -19,12 +19,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long sumRevenueByDate(@Param("today") LocalDate today);
 
+
+    /** 오늘자 시간대별 매출(raw) — MySQL HOUR() 사용 */
     @Query("""
-      SELECT FUNCTION('HOUR', i.order.createdAt), SUM(i.quantity * i.menu.price)
+      SELECT HOUR(i.order.createdAt), 
+             COALESCE(SUM(i.quantity * i.menu.price), 0)
       FROM OrderItem i
       WHERE FUNCTION('DATE', i.order.createdAt) = :today
-      GROUP BY FUNCTION('HOUR', i.order.createdAt)
-      ORDER BY FUNCTION('HOUR', i.order.createdAt)
+      GROUP BY HOUR(i.order.createdAt)
+      ORDER BY HOUR(i.order.createdAt)
     """)
     List<Object[]> sumRevenueByHourRaw(@Param("today") LocalDate today);
 }
