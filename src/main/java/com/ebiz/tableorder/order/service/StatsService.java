@@ -6,32 +6,46 @@ import com.ebiz.tableorder.order.repository.OrderItemRepository;
 import com.ebiz.tableorder.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
 public class StatsService {
+
     private final OrderRepository orderRepo;
     private final OrderItemRepository itemRepo;
 
-    public SalesStatsDTO getTodayStats() {
+    @Transactional(readOnly = true)
+    public SalesStatsDTO getTodaySalesStats() {
         LocalDate today = LocalDate.now();
 
-        long totalCustomers = orderRepo.countDistinctCustomersByDate(today);
-        long totalOrders    = orderRepo.countByDate(today);
-        long totalRevenue   = itemRepo.sumRevenueByDate(today);
+        long totalRevenue = itemRepo.sumRevenueByDate(today);
+        long totalOrders  = orderRepo.countByDate(today);
+        long totalTables  = orderRepo.countDistinctCustomersByDate(today);
 
-        // 쿼리에서 이미 (int hour, long revenue) 형태로 뽑아줍니다
-        List<SalesDataPoint> chartData = itemRepo.sumRevenueByHour(today);
+        // raw 결과를 SalesDataPoint 리스트로 매핑
+        List<SalesDataPoint> salesByHour =
+                itemRepo.sumRevenueByHourRaw(today).stream()
+                        .map(arr -> {
+                            Integer hour      = ((Number) arr[0]).intValue();
+                            BigDecimal sum    = (BigDecimal) arr[1];
+                            return new SalesDataPoint(hour, sum);
+                        })
+                        .collect(Collectors.toList());
 
         return new SalesStatsDTO(
-                totalCustomers,
+                totalTables,
                 totalOrders,
                 totalRevenue,
-                chartData
+                salesByHour
         );
     }
+
+    // ... 나머지 메서드들
 }

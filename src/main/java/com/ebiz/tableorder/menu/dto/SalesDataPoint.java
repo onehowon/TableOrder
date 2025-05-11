@@ -3,13 +3,14 @@ package com.ebiz.tableorder.menu.dto;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
 
 @Getter
 public class SalesDataPoint {
     private final Integer hour;
-    private final Double revenue;    // ← BigDecimal → Double 로 변경
+    private final BigDecimal revenue;
 
-    public SalesDataPoint(Integer hour, Double revenue) {
+    public SalesDataPoint(Integer hour, BigDecimal revenue) {
         this.hour    = hour;
         this.revenue = revenue;
     }
