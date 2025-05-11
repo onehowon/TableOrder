@@ -4,11 +4,13 @@ import com.ebiz.tableorder.common.CommonResponse;
 import com.ebiz.tableorder.menu.dto.MenuDTO;
 import com.ebiz.tableorder.menu.dto.MenuRequest;
 import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
+import com.ebiz.tableorder.menu.dto.SalesStatsDTO;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.oci.service.OciStorageService;
 import com.ebiz.tableorder.order.dto.*;
 import com.ebiz.tableorder.order.repository.OrderRepository;
 import com.ebiz.tableorder.order.service.OrderService;
+import com.ebiz.tableorder.order.service.StatsService;
 import com.ebiz.tableorder.table.dto.TableSummaryResponse;
 import com.ebiz.tableorder.table.service.TableService;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ public class AdminController {
     private final TableService tableService;
     private final OciStorageService storageService;
     private final OrderRepository orderRepository;
+    private final StatsService statsService;
 
     @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponse<MenuDTO>> createMenu(
@@ -139,6 +142,13 @@ public class AdminController {
     public CommonResponse<List<OrderAlertDTO>> getAlerts() {
         var dtos = orderService.getAlerts();
         return CommonResponse.success(dtos, "새 주문 알림 조회 완료");
+    }
+
+    @GetMapping("/sales")
+    public ResponseEntity<CommonResponse<SalesStatsDTO>> getSalesStats() {
+        SalesStatsDTO dto = statsService.getTodayStats();
+        return ResponseEntity
+                .ok(CommonResponse.success(dto, "매출 통계 조회 완료"));
     }
 
 }
