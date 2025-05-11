@@ -93,4 +93,11 @@ public class TableService {
                             .build();
                 }).toList();
     }
+
+    @Transactional
+    public void resetTable(int tableNumber) {
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to   = from.plusDays(1);
+        orderRepo.deleteByTable_TableNumberAndCreatedAtBetween(tableNumber, from, to);
+    }
 }

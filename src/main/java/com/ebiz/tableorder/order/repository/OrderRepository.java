@@ -60,4 +60,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("status") OrderStatus status,
             @Param("eta")    Integer estimatedTime
     );
+
+    @Modifying
+    @Query("delete from Order o where o.table.tableNumber = :tableNumber and o.createdAt between :from and :to")
+    void deleteByTable_TableNumberAndCreatedAtBetween(@Param("tableNumber") int tableNumber,
+                                                      @Param("from") LocalDateTime from,
+                                                      @Param("to")   LocalDateTime to);
 }

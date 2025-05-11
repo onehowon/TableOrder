@@ -148,4 +148,10 @@ public class AdminController {
                 .ok(CommonResponse.success(dto, "매출 통계 조회 완료"));
     }
 
+    @DeleteMapping("/tables/{tableNumber}/reset")
+    public CommonResponse<Void> resetTable(@PathVariable int tableNumber) {
+        tableService.resetTable(tableNumber);
+        return CommonResponse.success(null, "테이블 초기화 완료");
+    }
+
 }
