@@ -19,10 +19,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long sumRevenueByDate(@Param("today") LocalDate today);
 
-    /**
-     * ▶ 시간대별 매출(raw)
-     *  {hour, SUM(i.quantity * i.menu.price)} 쌍의 Object[] 리스트를 반환
-     */
     @Query("""
       SELECT FUNCTION('HOUR', i.order.createdAt), SUM(i.quantity * i.menu.price)
       FROM OrderItem i
