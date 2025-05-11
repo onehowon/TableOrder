@@ -11,7 +11,9 @@ import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-    /** 오늘자 총 매출 (quantity * menu.price) */
+    /**
+     * 오늘자 총 매출 (aggregate)
+     */
     @Query("""
       SELECT COALESCE(SUM(i.quantity * i.menu.price), 0)
       FROM OrderItem i
@@ -19,13 +21,13 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long sumRevenueByDate(@Param("today") LocalDate today);
 
-    /** 오늘자 시간대별 매출 차트 데이터 */
+    /**
+     * 오늘자 시간대별 매출
+     */
     @Query("""
       SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
         CONCAT(
-          LPAD(CAST(FUNCTION('HOUR', i.order.createdAt) AS string),
-               2,
-               '0'),
+          LPAD(CAST(FUNCTION('HOUR', i.order.createdAt) AS string), 2, '0'),
           '시'
         ),
         COALESCE(SUM(i.quantity * i.menu.price), 0)
