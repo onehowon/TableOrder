@@ -21,14 +21,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     /** 오늘자 시간대별 매출 차트용 (hour, revenue) */
     @Query("""
-      SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
-        FUNCTION('HOUR', i.order.createdAt),
-        COALESCE(SUM(i.quantity * i.menu.price), 0)
-      )
-      FROM OrderItem i
-      WHERE FUNCTION('DATE', i.order.createdAt) = :today
-      GROUP BY FUNCTION('HOUR', i.order.createdAt)
-      ORDER BY FUNCTION('HOUR', i.order.createdAt)
-    """)
+  SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
+    FUNCTION('HOUR', i.order.createdAt),
+    COALESCE(SUM(i.quantity * i.menu.price), 0.0)
+  )
+  FROM OrderItem i
+  WHERE FUNCTION('DATE', i.order.createdAt) = :today
+  GROUP BY FUNCTION('HOUR', i.order.createdAt)
+  ORDER BY FUNCTION('HOUR', i.order.createdAt)
+""")
     List<SalesDataPoint> sumRevenueByHour(@Param("today") LocalDate today);
+
 }
