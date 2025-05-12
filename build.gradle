@@ -78,6 +78,13 @@ dependencies {
 	// JAX-RS API (javax)
 	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 
+	// JWT API
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	// JWT 구현체
+	runtimeOnly   'io.jsonwebtoken:jjwt-impl:0.11.5'
+	// JWT 파싱 시 Jackson 사용
+	runtimeOnly   'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
 }
 
 tasks.named('test') {
