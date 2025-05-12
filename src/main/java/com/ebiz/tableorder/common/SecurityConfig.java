@@ -12,7 +12,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;  // 변경
+import org.springframework.security.crypto.password.PasswordEncoder;    // 변경
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -34,32 +35,26 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                // 세션 사용 안함 (JWT 방식을 쓰므로)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1) 프리플라이트 요청 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 2) 로그인 엔드포인트는 모두 허용
                         .requestMatchers("/admin/login").permitAll()
-                        // 3) 그 외 /admin/** 은 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // 4) 나머지 경로는 모두 허용
                         .anyRequest().permitAll()
                 )
-                // JWT 인증 필터를 기본 인증 필터 전에 추가
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                // 기존 HTTP Basic 은 비활성화
                 .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
 
+    /** 평문 비밀번호 비교용 NoOpPasswordEncoder 로 교체 **/
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        // 개발/테스트 전용입니다. 운영 환경에서는 절대 사용하지 마세요.
+        return NoOpPasswordEncoder.getInstance();
     }
 
-    // AuthenticationManager 빈 등록 (AdminAuthController 에서 사용)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
@@ -74,7 +69,7 @@ public class SecurityConfig {
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
