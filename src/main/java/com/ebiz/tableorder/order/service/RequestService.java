@@ -6,6 +6,10 @@ import com.ebiz.tableorder.order.repository.CustomerRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 // test
 @Service
 public class RequestService {
@@ -22,5 +26,12 @@ public class RequestService {
                 .build();
 
         repo.save(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerRequest> getTodayRequests() {
+        LocalDateTime start = LocalDate.now().atStartOfDay();
+        LocalDateTime end   = start.plusDays(1);
+        return repo.findAllByCreatedAtBetween(start, end);
     }
 }

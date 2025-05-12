@@ -21,7 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/admin")
@@ -32,7 +36,6 @@ public class AdminController {
     private final OrderService orderService;
     private final TableService tableService;
     private final OciStorageService storageService;
-    private final OrderRepository orderRepository;
     private final StatsService statsService;
     private final RequestService requestService;
 
@@ -134,8 +137,30 @@ public class AdminController {
 
     @GetMapping("/alerts")
     public CommonResponse<List<OrderAlertDTO>> getAlerts() {
-        var dtos = orderService.getAlerts();
-        return CommonResponse.success(dtos, "새 주문 알림 조회 완료");
+        // 1) 메뉴 주문 알림
+        List<OrderAlertDTO> orderAlerts = orderService.getAlerts();
+
+        // 2) 고객 요청 알림을 불러와 OrderAlertDTO 로 변환
+        List<OrderAlertDTO> requestAlerts = requestService.getTodayRequests().stream()
+                .map(r -> {
+                    // 요청 타입을 아이템 이름으로, 수량 0 으로 담습니다
+                    OrderAlertDTO.Item item =
+                            new OrderAlertDTO.Item(r.getType(), 0);
+                    return new OrderAlertDTO(
+                            r.getTableNumber(),
+                            List.of(item),
+                            r.getCreatedAt()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // 3) 시간 역순으로 합쳐서 반환
+        List<OrderAlertDTO> all = Stream
+                .concat(orderAlerts.stream(), requestAlerts.stream())
+                .sorted(Comparator.comparing(OrderAlertDTO::getCreatedAt).reversed())
+                .toList();
+
+        return CommonResponse.success(all, "새 알림 조회 완료");
     }
 
     @GetMapping("/sales")
