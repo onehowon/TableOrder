@@ -132,13 +132,6 @@ public class AdminController {
         return CommonResponse.success(tableService.getAllTablesSummaryToday(),"전체 테이블 요약");
     }
 
-    //
-    @PostMapping("/requests")
-    public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
-        requestService.postRequest(req);
-        return CommonResponse.success(null, "요청 전송 완료");
-    }
-
     @GetMapping("/alerts")
     public CommonResponse<List<OrderAlertDTO>> getAlerts() {
         var dtos = orderService.getAlerts();

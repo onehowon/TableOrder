@@ -73,8 +73,9 @@ public class CustomerController {
 
     @PostMapping("/requests")
     public CommonResponse<Void> postRequest(@RequestBody RequestDTO req) {
-        requestService.postRequest(req);
-        return CommonResponse.success(null, "요청 전송 완료");
+        // 이제 tableNumber 하나만 가지고 호출 처리
+        requestService.callStaff(req.getTableNumber());
+        return CommonResponse.success(null, "직원 호출 전송 완료");
     }
 
 }

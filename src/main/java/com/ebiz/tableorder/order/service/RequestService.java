@@ -16,13 +16,11 @@ public class RequestService {
     }
 
     @Transactional
-    public void postRequest(RequestDTO req) {
+    public void callStaff(Integer tableNumber) {
         CustomerRequest entity = CustomerRequest.builder()
-                .tableNumber(req.getTableNumber())
-                .type(req.getType())
+                .tableNumber(tableNumber)
                 .build();
 
         repo.save(entity);
-        // TODO: WebSocket 알림이나 FCM 푸시 로직 추가
     }
 }

@@ -9,5 +9,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestDTO {
     private Integer tableNumber;
-    private String type;
 }

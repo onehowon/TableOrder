@@ -22,9 +22,6 @@ public class CustomerRequest {
     @Column(name = "table_number", nullable = false)
     private Integer tableNumber;
 
-    @Column(nullable = false, length = 20)
-    private String type;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
