@@ -143,9 +143,9 @@ public class AdminController {
         // 2) 고객 요청 알림을 불러와 OrderAlertDTO 로 변환
         List<OrderAlertDTO> requestAlerts = requestService.getTodayRequests().stream()
                 .map(r -> {
-                    // 요청 타입을 아이템 이름으로, 수량 0 으로 담습니다
+                    // 이제 type 대신 고정 문자열을 사용합니다
                     OrderAlertDTO.Item item =
-                            new OrderAlertDTO.Item(r.getType(), 0);
+                            new OrderAlertDTO.Item("직원 호출", 0);
                     return new OrderAlertDTO(
                             r.getTableNumber(),
                             List.of(item),
@@ -162,6 +162,7 @@ public class AdminController {
 
         return CommonResponse.success(all, "새 알림 조회 완료");
     }
+
 
     @GetMapping("/sales")
     public ResponseEntity<CommonResponse<SalesStatsDTO>> getSalesStats() {
