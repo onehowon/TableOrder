@@ -163,6 +163,14 @@ public class AdminController {
         return CommonResponse.success(all, "새 알림 조회 완료");
     }
 
+    @GetMapping("/requests")
+    public CommonResponse<List<CustomerRequestDTO>> listRequests() {
+        List<CustomerRequestDTO> dtos = requestService.getTodayRequests().stream()
+                .map(r -> new CustomerRequestDTO(r.getId(), r.getTableNumber(), r.getCreatedAt()))
+                .collect(Collectors.toList());
+        return CommonResponse.success(dtos, "직원 호출 목록 조회 완료");
+    }
+
 
     @GetMapping("/sales")
     public ResponseEntity<CommonResponse<SalesStatsDTO>> getSalesStats() {
