@@ -31,7 +31,7 @@ public class Order {
     private Integer estimatedTime;
 
     @Column(nullable = false, updatable = true)
-    private boolean cleared = false;    // ← 추가: 정산 완료 플래그
+    private boolean cleared = false;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -49,7 +49,6 @@ public class Order {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Builder에서 cleared 기본값 쓰도록
     @Builder
     public Order(Long id,
                  com.ebiz.tableorder.table.entity.Table table,

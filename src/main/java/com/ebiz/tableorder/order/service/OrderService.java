@@ -31,7 +31,6 @@ public class OrderService {
     private final TableRepository     tableRepo;
     private final MenuRepository      menuRepo;
 
-    /* ---------------- 주문 생성 (변경 없음) ---------------- */
     public OrderResponse create(OrderRequest req) {
         Table table = tableRepo.findByTableNumber(req.getTableNumber())
                 .orElseThrow(() -> new ReportableError(404, "테이블을 찾을 수 없습니다."));
@@ -60,20 +59,16 @@ public class OrderService {
         return OrderResponse.from(full);
     }
 
-    /* --------------- 주문 단건 조회 (변경 없음) --------------- */
     public OrderResponse get(Long orderId) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문을 찾을 수 없습니다."));
         return OrderResponse.from(order);
     }
 
-    /* --------------- 주문 상태 변경 (+ ETA) --------------- */
     public OrderResponse updateStatus(Long orderId, StatusUpdateRequest req) {
-        // 1) 존재 확인
         orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
-        // 2) JPQL 업데이트 호출
         OrderStatus newStatus = OrderStatus.valueOf(req.getStatus());
         Integer eta = (newStatus == OrderStatus.DELETED) ? req.getEstimatedTime() : null;
         int updated = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
@@ -81,13 +76,11 @@ public class OrderService {
             throw new ReportableError(500, "주문 상태 업데이트에 실패했습니다.");
         }
 
-        // 3) 변경 후 엔티티 재조회
         Order after = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(500, "업데이트 후 조회에 실패했습니다."));
         return OrderResponse.from(after);
     }
 
-    /* ------ 오늘 전체 주문 조회 (cleared=false) ------ */
     @Transactional(readOnly = true)
     public List<OrderDetailDTO> getAllToday() {
         LocalDateTime from = LocalDate.now().atStartOfDay();
@@ -98,7 +91,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    /* -- 특정 테이블 오늘 주문 조회 (cleared=false) -- */
     @Transactional(readOnly = true)
     public TableOrderResponse getByTableToday(int tableNumber) {
         LocalDateTime from = LocalDate.now().atStartOfDay();
@@ -122,7 +114,6 @@ public class OrderService {
                 .build();
     }
 
-    /* ------ 오늘 매출 요약 (cleared 무시) ------ */
     @Transactional(readOnly = true)
     public SalesSummaryDTO getTodaySummary() {
         LocalDateTime from = LocalDate.now().atStartOfDay();
@@ -140,7 +131,6 @@ public class OrderService {
                 .build();
     }
 
-    /* ------ 새 주문 알림 (WAITING & cleared=false) ------ */
     public List<OrderAlertDTO> getAlerts() {
         return orderRepo.findByStatusAndClearedFalse(OrderStatus.WAITING)
                 .stream()
@@ -155,7 +145,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    /* ----- 엔티티 → DTO 변환 헬퍼 ----- */
     private OrderDetailDTO toDetailDto(Order o) {
         var itemDtos = o.getItems().stream()
                 .map(oi -> OrderItemDTO.builder()

@@ -27,22 +27,18 @@ public class StatsService {
     public SalesStatsDTO getTodaySalesStats() {
         LocalDate today = LocalDate.now();
 
-        // ─── 합계 통계 ────────────────────────────────────
         long totalRevenue = itemRepo.sumRevenueByDate(today);
         long totalOrders  = orderRepo.countByDate(today);
         long totalTables  = orderRepo.countDistinctCustomersByDate(today);
 
-        // ─── 시간대별 매출 DTO 리스트 조회 ───────────────────
         List<SalesDataPoint> rawPoints = itemRepo.sumRevenueByHour(today);
 
-        // ─── Map<시간, 매출> 으로 변환 ─────────────────────
         Map<Integer, Long> revenueMap = rawPoints.stream()
                 .collect(Collectors.toMap(
                         SalesDataPoint::getHour,
                         SalesDataPoint::getRevenue
                 ));
 
-        // ─── 0시부터 23시까지 빠진 시간은 0으로 채우기 ────────
         List<SalesDataPoint> fullPoints = IntStream.rangeClosed(0, 23)
                 .mapToObj(h -> new SalesDataPoint(
                         h,
@@ -57,6 +53,4 @@ public class StatsService {
                 fullPoints
         );
     }
-
-    // ... 다른 메서드들
 }

@@ -30,15 +30,12 @@ public class CustomerController {
     private final TableService tableService;
     private final RequestService requestService;
 
-    /* ---------- 메뉴 ---------- */
-
     @GetMapping("/menus")
     public ResponseEntity<CommonResponse<List<MenuDTO>>> menus() {
         List<MenuDTO> list = menuService.getAll();
         return ResponseEntity.ok(CommonResponse.success(list, "메뉴 조회"));
     }
 
-    /* ---------- 주문 ---------- */
     @PostMapping("/orders")
     public ResponseEntity<CommonResponse<OrderResponse>>
     order(@RequestBody @Valid OrderRequest req) {

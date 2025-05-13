@@ -81,9 +81,8 @@ public class AdminController {
     @PutMapping("/orders/{orderId}/status")
     public CommonResponse<OrderResponse> updateStatus(
             @PathVariable Long orderId,
-            @RequestBody @Valid StatusUpdateRequest req  // DTO 를 통째로 넘깁니다
+            @RequestBody @Valid StatusUpdateRequest req
     ) {
-        // service 의 시그니처에 맞춰 한 번에 request DTO 를 넘겨주세요
         OrderResponse resp = orderService.updateStatus(orderId, req);
         return CommonResponse.success(resp, "상태 변경 완료");
     }
@@ -146,11 +145,6 @@ public class AdminController {
                 .ok(CommonResponse.success(dto, "매출 통계 조회 완료"));
     }
 
-    @DeleteMapping("/tables/{tableNumber}/reset")
-    public CommonResponse<Void> resetTable(@PathVariable int tableNumber) {
-        tableService.resetTable(tableNumber);
-        return CommonResponse.success(null, "테이블 초기화 완료");
-    }
     @DeleteMapping("/requests/{id}")
     public CommonResponse<Void> deleteRequest(@PathVariable Long id) {
         requestService.deleteById(id);

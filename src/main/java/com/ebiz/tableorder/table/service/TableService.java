@@ -25,7 +25,6 @@ public class TableService {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
 
-        // ➞ findByTable…AndCreatedAtBetweenAndClearedFalse 사용
         List<Order> orders = orderRepo
                 .findByTable_TableNumberAndCreatedAtBetweenAndClearedFalse(tableNumber, from, to);
 
@@ -60,7 +59,6 @@ public class TableService {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
 
-        // ➞ findByCreatedAtBetweenAndClearedFalse 사용
         List<Order> allOrders = orderRepo
                 .findByCreatedAtBetweenAndClearedFalse(from, to);
 
@@ -99,13 +97,5 @@ public class TableService {
                             .build();
                 })
                 .toList();
-    }
-
-    /** 정산 완료 → cleared=true */
-    @Transactional
-    public void resetTable(int tableNumber) {
-        LocalDateTime from = LocalDate.now().atStartOfDay();
-        LocalDateTime to   = from.plusDays(1);
-        orderRepo.markClearedByTableAndDate(tableNumber, from, to);
     }
 }

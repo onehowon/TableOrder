@@ -12,5 +12,5 @@ import java.time.LocalDateTime;
 public class CustomerRequestDTO {
     private Long id;
     private int tableNumber;
-    private LocalDateTime createdAt;  // ISO 문자열로 내려받습니다
+    private LocalDateTime createdAt;
 }
