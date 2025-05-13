@@ -41,6 +41,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             LocalDateTime to
     );
 
+    List<Order> findByTable_TableNumberAndCreatedAtBetween(
+            Integer tableNumber,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
     /** 알림용: WAITING & cleared=false */
     List<Order> findByStatusAndClearedFalse(OrderStatus status);
 

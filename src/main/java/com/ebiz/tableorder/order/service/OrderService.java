@@ -76,11 +76,16 @@ public class OrderService {
         Order updated = old.toBuilder()
                 .status(newStatus)
                 .estimatedTime(newEta)
-                .deletedAt(newStatus == OrderStatus.DELETED && old.getDeletedAt() == null
-                        ? LocalDateTime.now() :
-                        newStatus == OrderStatus.WAITING ? null : old.getDeletedAt())
-                .cleared(newStatus == OrderStatus.SERVED || old.isCleared())
+                .deletedAt(
+                        newStatus == OrderStatus.DELETED && old.getDeletedAt() == null
+                                ? LocalDateTime.now()
+                                : newStatus == OrderStatus.WAITING
+                                ? null
+                                : old.getDeletedAt()
+                )
+                .cleared(old.isCleared())
                 .build();
+
 
         Order saved = orderRepo.save(updated);
         return OrderResponse.from(saved);
@@ -90,7 +95,7 @@ public class OrderService {
     public List<OrderDetailDTO> getAllToday() {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
-        return orderRepo.findByCreatedAtBetweenAndClearedFalse(from, to)
+        return orderRepo.findByCreatedAtBetween(from, to)
                 .stream()
                 .map(this::toDetailDto)
                 .collect(Collectors.toList());
@@ -101,7 +106,7 @@ public class OrderService {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to   = from.plusDays(1);
         var orders = orderRepo
-                .findByTable_TableNumberAndCreatedAtBetweenAndClearedFalse(tableNumber, from, to);
+                .findByTable_TableNumberAndCreatedAtBetween(tableNumber, from, to);
 
         int total = orders.stream()
                 .flatMap(o -> o.getItems().stream())
