@@ -172,11 +172,14 @@ public class AdminController {
     }
 
     @DeleteMapping("/tables/{tableNumber}/reset")
-
-
     public CommonResponse<Void> resetTable(@PathVariable int tableNumber) {
         tableService.resetTable(tableNumber);
         return CommonResponse.success(null, "테이블 초기화 완료");
+    }
+    @DeleteMapping("/requests/{id}")
+    public CommonResponse<Void> deleteRequest(@PathVariable Long id) {
+        requestService.deleteById(id);
+        return CommonResponse.success(null, "직원 호출 처리 완료");
     }
 
 }

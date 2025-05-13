@@ -34,4 +34,9 @@ public class RequestService {
         LocalDateTime end   = start.plusDays(1);
         return repo.findAllByCreatedAtBetween(start, end);
     }
+
+    @Transactional
+    public void deleteById(Long id) {
+        repo.deleteById(id);
+    }
 }
