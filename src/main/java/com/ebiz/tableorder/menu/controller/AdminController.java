@@ -113,18 +113,6 @@ public class AdminController {
         return ResponseEntity.ok(CommonResponse.success(null, "메뉴 삭제 완료"));
     }
 
-    @PutMapping("/menus/{menuId}/deactivate")
-    public ResponseEntity<CommonResponse<Void>> deactivateMenu(@PathVariable Long menuId) {
-        menuService.deactivate(menuId);
-        return ResponseEntity.ok(CommonResponse.success(null, "메뉴 비활성화 완료"));
-    }
-
-    @PutMapping("/menus/{menuId}/activate")
-    public ResponseEntity<CommonResponse<Void>> activateMenu(@PathVariable Long menuId) {
-        menuService.activate(menuId);
-        return ResponseEntity.ok(CommonResponse.success(null, "메뉴 활성화 완료"));
-    }
-
     @GetMapping("/tables/summary")
     public CommonResponse<TableSummaryResponse> tableSummary(@RequestParam int table){
         return CommonResponse.success(tableService.getSummaryToday(table),"테이블 요약");
@@ -137,30 +125,9 @@ public class AdminController {
 
     @GetMapping("/alerts")
     public CommonResponse<List<OrderAlertDTO>> getAlerts() {
-        // 1) 메뉴 주문 알림
         List<OrderAlertDTO> orderAlerts = orderService.getAlerts();
-
-        // 2) 고객 요청 알림을 불러와 OrderAlertDTO 로 변환
-        List<OrderAlertDTO> requestAlerts = requestService.getTodayRequests().stream()
-                .map(r -> {
-                    // 이제 type 대신 고정 문자열을 사용합니다
-                    OrderAlertDTO.Item item =
-                            new OrderAlertDTO.Item("직원 호출", 0);
-                    return new OrderAlertDTO(
-                            r.getTableNumber(),
-                            List.of(item),
-                            r.getCreatedAt()
-                    );
-                })
-                .collect(Collectors.toList());
-
-        // 3) 시간 역순으로 합쳐서 반환
-        List<OrderAlertDTO> all = Stream
-                .concat(orderAlerts.stream(), requestAlerts.stream())
-                .sorted(Comparator.comparing(OrderAlertDTO::getCreatedAt).reversed())
-                .toList();
-
-        return CommonResponse.success(all, "새 알림 조회 완료");
+        orderAlerts.sort(Comparator.comparing(OrderAlertDTO::getCreatedAt).reversed());
+        return CommonResponse.success(orderAlerts, "주문 알림 조회 완료");
     }
 
     @GetMapping("/requests")

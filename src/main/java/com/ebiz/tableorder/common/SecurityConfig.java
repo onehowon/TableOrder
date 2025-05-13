@@ -51,7 +51,6 @@ public class SecurityConfig {
     /** 평문 비밀번호 비교용 NoOpPasswordEncoder 로 교체 **/
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // 개발/테스트 전용입니다. 운영 환경에서는 절대 사용하지 마세요.
         return NoOpPasswordEncoder.getInstance();
     }
 
