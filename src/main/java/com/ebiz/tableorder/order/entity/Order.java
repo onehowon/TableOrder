@@ -1,10 +1,7 @@
 package com.ebiz.tableorder.order.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,8 +9,9 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor
-@Builder
 @Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,13 +25,19 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
-    @Column(name="estimated_time")
+    @Column(name = "estimated_time")
     private Integer estimatedTime;
 
-    @Column(nullable = false, updatable = true)
-    private boolean cleared = false;
+    @Column(nullable = false)
+    private boolean cleared;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;    // 삭제 시각
+
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -42,29 +46,11 @@ public class Order {
     @PrePersist
     protected void onCreate() {
         this.createdAt = this.updatedAt = LocalDateTime.now();
+        this.cleared   = false;
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    @Builder
-    public Order(Long id,
-                 com.ebiz.tableorder.table.entity.Table table,
-                 OrderStatus status,
-                 Integer estimatedTime,
-                 boolean cleared,
-                 LocalDateTime createdAt,
-                 LocalDateTime updatedAt,
-                 List<OrderItem> items) {
-        this.id            = id;
-        this.table         = table;
-        this.status        = status;
-        this.estimatedTime = estimatedTime;
-        this.cleared       = cleared;
-        this.createdAt     = createdAt;
-        this.updatedAt     = updatedAt;
-        this.items         = items;
     }
 }

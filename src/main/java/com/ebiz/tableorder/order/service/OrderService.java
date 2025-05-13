@@ -65,20 +65,25 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
+    @Transactional
     public OrderResponse updateStatus(Long orderId, StatusUpdateRequest req) {
-        orderRepo.findById(orderId)
+        Order old = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ReportableError(404, "주문이 존재하지 않습니다."));
 
         OrderStatus newStatus = OrderStatus.valueOf(req.getStatus());
-        Integer eta = (newStatus == OrderStatus.DELETED) ? req.getEstimatedTime() : null;
-        int updated = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
-        if (updated != 1) {
-            throw new ReportableError(500, "주문 상태 업데이트에 실패했습니다.");
-        }
+        Integer newEta = (newStatus == OrderStatus.DELETED) ? req.getEstimatedTime() : null;
 
-        Order after = orderRepo.findById(orderId)
-                .orElseThrow(() -> new ReportableError(500, "업데이트 후 조회에 실패했습니다."));
-        return OrderResponse.from(after);
+        Order updated = old.toBuilder()
+                .status(newStatus)
+                .estimatedTime(newEta)
+                .deletedAt(newStatus == OrderStatus.DELETED && old.getDeletedAt() == null
+                        ? LocalDateTime.now() :
+                        newStatus == OrderStatus.WAITING ? null : old.getDeletedAt())
+                .cleared(newStatus == OrderStatus.SERVED || old.isCleared())
+                .build();
+
+        Order saved = orderRepo.save(updated);
+        return OrderResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -159,6 +164,7 @@ public class OrderService {
                 .status(o.getStatus().name())
                 .createdAt(o.getCreatedAt())
                 .items(itemDtos)
+                .deletedAt(o.getDeletedAt())
                 .build();
     }
 }

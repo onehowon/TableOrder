@@ -16,4 +16,5 @@ public class OrderDetailDTO {
     private final String status;
     private final LocalDateTime createdAt;
     private final List<OrderItemDTO> items;
+    private LocalDateTime deletedAt;
 }

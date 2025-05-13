@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +20,14 @@ public class OrderResponse {
     private Long orderId;
     private int tableNumber;
     private String status;
-    private int estimatedTime;
+    private Integer estimatedTime;
     private List<ItemDTO> items;
+    private LocalDateTime deletedAt;
+    private boolean cleared;
 
     public static OrderResponse from(Order order) {
-        int eta = order.getEstimatedTime() != null
+        // 기존 ETA 로직 유지
+        Integer eta = order.getEstimatedTime() != null
                 ? order.getEstimatedTime()
                 : 0;
 
@@ -43,6 +47,9 @@ public class OrderResponse {
                 .status(order.getStatus().name())
                 .estimatedTime(eta)
                 .items(dtos)
+                // 신규 필드 매핑
+                .deletedAt(order.getDeletedAt())
+                .cleared(order.isCleared())
                 .build();
     }
 
