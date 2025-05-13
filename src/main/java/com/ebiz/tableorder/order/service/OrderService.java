@@ -75,7 +75,7 @@ public class OrderService {
 
         // 2) JPQL 업데이트 호출
         OrderStatus newStatus = OrderStatus.valueOf(req.getStatus());
-        Integer eta = (newStatus == OrderStatus.COOKING) ? req.getEstimatedTime() : null;
+        Integer eta = (newStatus == OrderStatus.DELETED) ? req.getEstimatedTime() : null;
         int updated = orderRepo.updateStatusAndEta(orderId, newStatus, eta);
         if (updated != 1) {
             throw new ReportableError(500, "주문 상태 업데이트에 실패했습니다.");
