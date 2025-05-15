@@ -61,6 +61,7 @@ public class MenuService {
                 .price(e.getPrice())
                 .isAvailable(e.getIsAvailable())
                 .imageUrl(e.getImageUrl())
+                .category(e.getCategory())
                 .build();
     }
 
