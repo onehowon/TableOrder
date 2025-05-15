@@ -2,6 +2,7 @@ package com.ebiz.tableorder.order.controller;
 
 import com.ebiz.tableorder.common.CommonResponse;
 import com.ebiz.tableorder.menu.dto.MenuDTO;
+import com.ebiz.tableorder.menu.entity.Category;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.order.dto.OrderRequest;
 import com.ebiz.tableorder.order.dto.OrderResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 
 //rebuild
@@ -34,6 +36,26 @@ public class CustomerController {
     public ResponseEntity<CommonResponse<List<MenuDTO>>> menus() {
         List<MenuDTO> list = menuService.getAll();
         return ResponseEntity.ok(CommonResponse.success(list, "메뉴 조회"));
+    }
+
+    @GetMapping("/{tableNumber}/menus")
+    public CommonResponse<List<MenuDTO>> listMenusByCategory(
+            @PathVariable int tableNumber,
+            @RequestParam(required = false) Category category
+    ) {
+        // 1) 전체 메뉴 가져오기
+        List<MenuDTO> all = menuService.getAll();
+
+        // 2) 품절(false)된 건은 빼고
+        Stream<MenuDTO> stream = all.stream().filter(MenuDTO::getIsAvailable);
+
+        // 3) category 파라미터가 있으면 그 타입만 필터
+        if (category != null) {
+            stream = stream.filter(m -> m.getCategory() == category);
+        }
+
+        List<MenuDTO> filtered = stream.toList();
+        return CommonResponse.success(filtered, "메뉴 조회 완료");
     }
 
     @PostMapping("/orders")
