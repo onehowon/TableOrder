@@ -27,6 +27,7 @@ public class MenuService {
                 .price(req.getPrice())
                 .isAvailable(true)
                 .imageUrl(imageUrl)
+                .category(req.getCategory())
                 .build();
         return toDto(menuRepo.save(menu));
     }
@@ -42,6 +43,7 @@ public class MenuService {
                 .price(         req.getPrice()       != null ? req.getPrice()       : menu.getPrice())
                 .isAvailable(   req.getIsAvailable() != null ? req.getIsAvailable() : menu.getIsAvailable())
                 .imageUrl(      imageUrl             != null ? imageUrl             : menu.getImageUrl())
+                .category(req.getCategory() != null ? req.getCategory() : menu.getCategory())
                 .build();
 
         return toDto(menuRepo.save(updated));

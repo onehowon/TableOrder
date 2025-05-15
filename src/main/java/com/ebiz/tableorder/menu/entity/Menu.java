@@ -35,6 +35,8 @@ public class Menu {
     @Column(name = "image_url")
     private String imageUrl;
 
+    private Category category;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
