@@ -37,20 +37,23 @@ public class StatsService {
         List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHour(today);
         Map<Integer, Long> hourMap = rawHour.stream()
                 .collect(Collectors.toMap(SalesDataPoint::getHour, SalesDataPoint::getRevenue));
-        List<SalesDataPoint> fullHour = IntStream.rangeClosed(0, 23)
+
+        // ↓ 변수명을 fullHourPoints로 통일
+        List<SalesDataPoint> fullHourPoints = IntStream.rangeClosed(0, 23)
                 .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        List<SalesMenuPoint> rawMenu =
-                itemRepo.sumProfitByMenu(today, tomorrow);
+        // 2) 메뉴별 이윤
+        List<SalesMenuPoint> menuPoints = itemRepo.sumProfitByMenu(today, tomorrow);
 
-        // 3) DTO 생성 (5번째 파라미터로 메뉴별 리스트 추가!)
+        // 반환 시에도 fullHourPoints 이름 사용
         return new SalesStatsDTO(
                 totalTables,
                 totalOrders,
                 totalRevenue,
-                fullHour,
-                rawMenu
+                fullHourPoints,
+                menuPoints
         );
     }
+
 }
