@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +30,9 @@ public class StatsService {
         LocalDate today = LocalDate.now();
         LocalDate tomorrow  = today.plusDays(1);
 
+        LocalDateTime startOfToday    = today.atStartOfDay();
+        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
+
         long totalRevenue = itemRepo.sumRevenueByDate(today);
         long totalOrders  = orderRepo.countByDate(today);
         long totalTables  = orderRepo.countDistinctCustomersByDate(today);
@@ -37,16 +41,13 @@ public class StatsService {
         List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHour(today);
         Map<Integer, Long> hourMap = rawHour.stream()
                 .collect(Collectors.toMap(SalesDataPoint::getHour, SalesDataPoint::getRevenue));
-
-        // ↓ 변수명을 fullHourPoints로 통일
         List<SalesDataPoint> fullHourPoints = IntStream.rangeClosed(0, 23)
                 .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        // 2) 메뉴별 이윤
-        List<SalesMenuPoint> menuPoints = itemRepo.sumProfitByMenu(today, tomorrow);
+        List<SalesMenuPoint> menuPoints =
+                itemRepo.sumProfitByMenu(startOfToday, startOfTomorrow);
 
-        // 반환 시에도 fullHourPoints 이름 사용
         return new SalesStatsDTO(
                 totalTables,
                 totalOrders,

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
@@ -39,12 +40,12 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     SUM((i.menu.price - i.menu.cost) * i.quantity)
   )
   FROM OrderItem i
-  WHERE i.order.createdAt >= :startDate
-    AND i.order.createdAt <  :endDate
+  WHERE i.order.createdAt >= :startDateTime
+    AND i.order.createdAt <  :endDateTime
   GROUP BY i.menu.name
 """)
     List<SalesMenuPoint> sumProfitByMenu(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate")   LocalDate endDate
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
     );
 }
