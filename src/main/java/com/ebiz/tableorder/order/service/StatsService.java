@@ -31,26 +31,25 @@ public class StatsService {
         long totalOrders  = orderRepo.countByDate(today);
         long totalTables  = orderRepo.countDistinctCustomersByDate(today);
 
-        List<SalesDataPoint> rawPoints = itemRepo.sumRevenueByHour(today);
-
-        Map<Integer, Long> revenueMap = rawPoints.stream()
-                .collect(Collectors.toMap(
-                        SalesDataPoint::getHour,
-                        SalesDataPoint::getRevenue
-                ));
-
-        List<SalesDataPoint> fullPoints = IntStream.rangeClosed(0, 23)
-                .mapToObj(h -> new SalesDataPoint(
-                        h,
-                        revenueMap.getOrDefault(h, 0L)
-                ))
+        // 1) 시간대별 매출
+        List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHour(today);
+        Map<Integer, Long> hourMap = rawHour.stream()
+                .collect(Collectors.toMap(SalesDataPoint::getHour, SalesDataPoint::getRevenue));
+        List<SalesDataPoint> fullHour = IntStream.rangeClosed(0, 23)
+                .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
+        // 2) 메뉴별 이윤
+        List<SalesDataPoint> rawMenu = itemRepo.sumProfitByMenu(today);
+        // (필요하다면 메뉴가 없는 경우 0으로 채우는 로직도 추가)
+
+        // 3) DTO 생성 (5번째 파라미터로 메뉴별 리스트 추가!)
         return new SalesStatsDTO(
                 totalTables,
                 totalOrders,
                 totalRevenue,
-                fullPoints
+                fullHour,
+                rawMenu
         );
     }
 }

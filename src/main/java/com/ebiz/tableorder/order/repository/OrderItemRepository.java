@@ -31,4 +31,16 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
       ORDER BY HOUR(i.order.createdAt)
     """)
     List<SalesDataPoint> sumRevenueByHour(@Param("today") LocalDate today);
+
+    @Query("""
+      SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
+        i.menu.id, 
+        SUM((i.menu.price - i.menu.cost) * i.quantity)
+      )
+      FROM OrderItem i
+      WHERE i.order.createdAt >= :date
+        AND i.order.createdAt < :date.plusDays(1)
+      GROUP BY i.menu.id
+    """)
+    List<SalesDataPoint> sumProfitByMenu(LocalDate date);
 }
