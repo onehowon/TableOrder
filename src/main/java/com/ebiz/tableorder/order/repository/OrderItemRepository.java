@@ -1,6 +1,7 @@
 package com.ebiz.tableorder.order.repository;
 
 import com.ebiz.tableorder.menu.dto.SalesDataPoint;
+import com.ebiz.tableorder.menu.dto.SalesMenuPoint;
 import com.ebiz.tableorder.order.entity.OrderItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,17 +34,13 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     List<SalesDataPoint> sumRevenueByHour(@Param("today") LocalDate today);
 
     @Query("""
-      SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
-        i.menu.id,
-        SUM((i.menu.price - i.menu.cost) * i.quantity)
-      )
-      FROM OrderItem i
-      WHERE i.order.createdAt >= :startDate
-        AND i.order.createdAt <  :endDate
-      GROUP BY i.menu.id
-    """)
-    List<SalesDataPoint> sumProfitByMenu(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate")   LocalDate endDate
-    );
+ SELECT new com.ebiz.tableorder.menu.dto.SalesMenuPoint(
+   i.menu.id,
+   SUM((i.menu.price - i.menu.cost) * i.quantity)
+ )
+ FROM OrderItem i
+ WHERE … 
+ GROUP BY i.menu.id
+""")
+    List<SalesMenuPoint> sumProfitByMenu(LocalDate startDate, LocalDate endDate);
 }

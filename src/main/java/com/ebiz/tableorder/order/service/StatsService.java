@@ -1,6 +1,7 @@
 package com.ebiz.tableorder.order.service;
 
 import com.ebiz.tableorder.menu.dto.SalesDataPoint;
+import com.ebiz.tableorder.menu.dto.SalesMenuPoint;
 import com.ebiz.tableorder.menu.dto.SalesStatsDTO;
 import com.ebiz.tableorder.order.repository.OrderItemRepository;
 import com.ebiz.tableorder.order.repository.OrderRepository;
@@ -40,7 +41,7 @@ public class StatsService {
                 .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        List<SalesDataPoint> rawMenu =
+        List<SalesMenuPoint> rawMenu =
                 itemRepo.sumProfitByMenu(today, tomorrow);
 
         // 3) DTO 생성 (5번째 파라미터로 메뉴별 리스트 추가!)
