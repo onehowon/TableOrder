@@ -26,6 +26,7 @@ public class StatsService {
     @Transactional(readOnly = true)
     public SalesStatsDTO getTodaySalesStats() {
         LocalDate today = LocalDate.now();
+        LocalDate tomorrow  = today.plusDays(1);
 
         long totalRevenue = itemRepo.sumRevenueByDate(today);
         long totalOrders  = orderRepo.countByDate(today);
@@ -39,9 +40,8 @@ public class StatsService {
                 .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        // 2) 메뉴별 이윤
-        List<SalesDataPoint> rawMenu = itemRepo.sumProfitByMenu(today);
-        // (필요하다면 메뉴가 없는 경우 0으로 채우는 로직도 추가)
+        List<SalesDataPoint> rawMenu =
+                itemRepo.sumProfitByMenu(today, tomorrow);
 
         // 3) DTO 생성 (5번째 파라미터로 메뉴별 리스트 추가!)
         return new SalesStatsDTO(

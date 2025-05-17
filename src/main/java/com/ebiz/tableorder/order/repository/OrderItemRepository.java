@@ -34,13 +34,16 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("""
       SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
-        i.menu.id, 
+        i.menu.id,
         SUM((i.menu.price - i.menu.cost) * i.quantity)
       )
       FROM OrderItem i
-      WHERE i.order.createdAt >= :date
-        AND i.order.createdAt < :date.plusDays(1)
+      WHERE i.order.createdAt >= :startDate
+        AND i.order.createdAt <  :endDate
       GROUP BY i.menu.id
     """)
-    List<SalesDataPoint> sumProfitByMenu(LocalDate date);
+    List<SalesDataPoint> sumProfitByMenu(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
 }
