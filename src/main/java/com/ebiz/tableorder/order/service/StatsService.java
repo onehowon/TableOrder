@@ -1,6 +1,7 @@
 package com.ebiz.tableorder.order.service;
 
 import com.ebiz.tableorder.menu.dto.SalesDataPoint;
+import com.ebiz.tableorder.menu.dto.SalesMenuPoint;
 import com.ebiz.tableorder.menu.dto.SalesStatsDTO;
 import com.ebiz.tableorder.order.repository.OrderItemRepository;
 import com.ebiz.tableorder.order.repository.OrderRepository;
@@ -26,40 +27,34 @@ public class StatsService {
     @Transactional(readOnly = true)
     public SalesStatsDTO getTodaySalesStats() {
         LocalDate today = LocalDate.now();
+        LocalDateTime startOfToday    = today.atStartOfDay();
+        LocalDateTime startOfTomorrow = today.plusDays(1).atStartOfDay();
 
-        long totalRevenue = itemRepo.sumRevenueByDate(today);
-        long totalOrders  = orderRepo.countByDate(today);
-        long totalTables  = orderRepo.countDistinctCustomersByDate(today);
+        long totalRevenue   = itemRepo.sumRevenueByDate(today);
+        long totalOrders    = orderRepo.countByDate(today);
+        long totalCustomers = orderRepo.countDistinctCustomersByDate(today);
 
-        List<SalesDataPoint> rawPoints = itemRepo.sumRevenueByHour(today);
-
-        Map<Integer, Long> revenueMap = rawPoints.stream()
-                .collect(Collectors.toMap(
-                        SalesDataPoint::getHour,
-                        SalesDataPoint::getRevenue
-                ));
-
-        List<SalesDataPoint> fullPoints = IntStream.rangeClosed(0, 23)
-                .mapToObj(h -> new SalesDataPoint(
-                        h,
-                        revenueMap.getOrDefault(h, 0L)
-                ))
+        // 시간대별 매출
+        List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHour(today);
+        Map<Integer, Long> hourMap = rawHour.stream()
+                .collect(Collectors.toMap(SalesDataPoint::getHour, SalesDataPoint::getRevenue));
+        List<SalesDataPoint> salesByHour = IntStream.rangeClosed(0, 23)
+                .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        // 메뉴별 이윤 집계
-        List<SalesDataPoint> profitPoints = itemRepo.sumProfitByMenu(today);
-        // 전체 이윤 합계
-        long totalProfit = profitPoints.stream()
-                .mapToLong(SalesDataPoint::getRevenue)
+        // 메뉴별 이윤
+        List<SalesMenuPoint> salesByMenu = itemRepo.sumProfitByMenu(startOfToday, startOfTomorrow);
+        long totalProfit = salesByMenu.stream()
+                .mapToLong(SalesMenuPoint::getProfit)
                 .sum();
 
         return new SalesStatsDTO(
-                totalTables,
+                totalCustomers,
                 totalOrders,
                 totalRevenue,
                 totalProfit,
-                fullPoints,
-                profitPoints
+                salesByHour,
+                salesByMenu
         );
     }
 }

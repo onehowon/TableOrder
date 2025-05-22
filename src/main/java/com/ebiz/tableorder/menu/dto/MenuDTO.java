@@ -1,5 +1,6 @@
 package com.ebiz.tableorder.menu.dto;
 
+import com.ebiz.tableorder.menu.entity.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,5 @@ public class MenuDTO {
     private Integer price;
     private Boolean isAvailable;
     private String imageUrl;
-
-
+    private Category category;
 }

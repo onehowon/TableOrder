@@ -35,6 +35,13 @@ public class Menu {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(nullable = false)
+    private Integer cost = 0;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

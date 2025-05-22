@@ -1,6 +1,7 @@
 package com.ebiz.tableorder.order.repository;
 
 import com.ebiz.tableorder.menu.dto.SalesDataPoint;
+import com.ebiz.tableorder.menu.dto.SalesMenuPoint;
 import com.ebiz.tableorder.order.entity.OrderItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,10 +20,10 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long sumRevenueByDate(@Param("today") LocalDate today);
 
-    /** 오늘자 시간대별 매출 DTO 반환 */
+    /** 오늘자 시간대별 매출 */
     @Query("""
       SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
-        HOUR(i.order.createdAt), 
+        HOUR(i.order.createdAt),
         COALESCE(SUM(i.quantity * i.menu.price), 0)
       )
       FROM OrderItem i
@@ -32,15 +33,17 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     List<SalesDataPoint> sumRevenueByHour(@Param("today") LocalDate today);
 
+    /** 오늘자 메뉴별 이윤 집계 */
     @Query("""
-      SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
+      SELECT new com.ebiz.tableorder.menu.dto.SalesMenuPoint(
         i.menu.name,
-        COALESCE(SUM(i.quantity * (i.menu.price - i.menu.cost)), 0)
+        COALESCE(SUM((i.menu.price - i.menu.cost) * i.quantity), 0)
       )
       FROM OrderItem i
       WHERE FUNCTION('DATE', i.order.createdAt) = :today
       GROUP BY i.menu.name
       ORDER BY i.menu.name
     """)
-    List<SalesDataPoint> sumProfitByMenu(@Param("today") LocalDate today);
+    List<SalesMenuPoint> sumProfitByMenu(@Param("today") LocalDate today);
+
 }

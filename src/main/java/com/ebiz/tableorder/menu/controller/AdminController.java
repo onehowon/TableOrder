@@ -5,6 +5,7 @@ import com.ebiz.tableorder.menu.dto.MenuDTO;
 import com.ebiz.tableorder.menu.dto.MenuRequest;
 import com.ebiz.tableorder.menu.dto.MenuUpdateRequest;
 import com.ebiz.tableorder.menu.dto.SalesStatsDTO;
+import com.ebiz.tableorder.menu.entity.Category;
 import com.ebiz.tableorder.menu.service.MenuService;
 import com.ebiz.tableorder.oci.service.OciStorageService;
 import com.ebiz.tableorder.order.dto.*;
@@ -41,11 +42,12 @@ public class AdminController {
             @RequestParam String  name,
             @RequestParam String  description,
             @RequestParam Integer price,
+            @RequestParam Category category,
             @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String imageUrl = (file != null && !file.isEmpty()) ? storageService.upload(file) : null;
 
-        MenuRequest req = new MenuRequest(name, description, price);
+        MenuRequest req = new MenuRequest(name, description, price, category);
         MenuDTO dto    = menuService.create(req, imageUrl);
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 등록 완료"));
     }
@@ -57,13 +59,14 @@ public class AdminController {
             @RequestParam(required = false) String  description,
             @RequestParam(required = false) Integer price,
             @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) Category category,
             @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String imageUrl = (file != null && !file.isEmpty())
                 ? storageService.upload(file)
                 : null;
 
-        MenuUpdateRequest req = new MenuUpdateRequest(name, description, price, isAvailable);
+        MenuUpdateRequest req = new MenuUpdateRequest(name, description, price, isAvailable, category);
         MenuDTO dto           = menuService.update(menuId, req, imageUrl);
 
         return ResponseEntity.ok(CommonResponse.success(dto, "메뉴 수정 완료"));
