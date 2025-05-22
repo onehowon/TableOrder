@@ -6,5 +6,9 @@ public record SalesStatsDTO(
         long totalCustomers,
         long totalOrders,
         long totalRevenue,
-        List<SalesDataPoint> salesByHour    // ← Map 대신 List<SalesDataPoint> 로!
+
+        long totalProfit,
+        List<SalesDataPoint> salesByHour,
+
+        List<SalesDataPoint> salesByMenu
 ) {}

@@ -46,11 +46,20 @@ public class StatsService {
                 ))
                 .collect(Collectors.toList());
 
+        // 메뉴별 이윤 집계
+        List<SalesDataPoint> profitPoints = itemRepo.sumProfitByMenu(today);
+        // 전체 이윤 합계
+        long totalProfit = profitPoints.stream()
+                .mapToLong(SalesDataPoint::getRevenue)
+                .sum();
+
         return new SalesStatsDTO(
                 totalTables,
                 totalOrders,
                 totalRevenue,
-                fullPoints
+                totalProfit,
+                fullPoints,
+                profitPoints
         );
     }
 }
