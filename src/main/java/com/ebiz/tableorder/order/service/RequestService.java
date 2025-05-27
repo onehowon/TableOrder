@@ -1,6 +1,5 @@
 package com.ebiz.tableorder.order.service;
 
-import com.ebiz.tableorder.order.dto.RequestDTO;
 import com.ebiz.tableorder.order.entity.CustomerRequest;
 import com.ebiz.tableorder.order.repository.CustomerRequestRepository;
 import org.springframework.stereotype.Service;
@@ -10,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// test
 @Service
 public class RequestService {
     private final CustomerRequestRepository repo;

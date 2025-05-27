@@ -26,7 +26,6 @@ public class OrderResponse {
     private boolean cleared;
 
     public static OrderResponse from(Order order) {
-        // 기존 ETA 로직 유지
         Integer eta = order.getEstimatedTime() != null
                 ? order.getEstimatedTime()
                 : 0;
@@ -47,7 +46,6 @@ public class OrderResponse {
                 .status(order.getStatus().name())
                 .estimatedTime(eta)
                 .items(dtos)
-                // 신규 필드 매핑
                 .deletedAt(order.getDeletedAt())
                 .cleared(order.isCleared())
                 .build();

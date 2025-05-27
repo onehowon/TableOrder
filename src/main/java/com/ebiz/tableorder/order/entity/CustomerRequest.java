@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CustomerRequest {
-    // ddl 반영
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
