@@ -139,10 +139,9 @@ public class AdminController {
 
 
     @GetMapping("/sales")
-    public ResponseEntity<CommonResponse<SalesStatsDTO>> getSalesStats() {
-        SalesStatsDTO dto = statsService.getTodaySalesStats();
-        return ResponseEntity
-                .ok(CommonResponse.success(dto, "매출 통계 조회 완료"));
+    public CommonResponse<SalesStatsDTO> getSalesStats() {
+        SalesStatsDTO dto = statsService.getCumulativeSalesStats();
+        return CommonResponse.success(dto, "누적 매출 통계 조회 완료");
     }
 
     @DeleteMapping("/requests/{id}")

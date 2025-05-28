@@ -9,9 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,25 +23,19 @@ public class StatsService {
     private final OrderItemRepository itemRepo;
 
     @Transactional(readOnly = true)
-    public SalesStatsDTO getTodaySalesStats() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfToday    = today.atStartOfDay();
-        LocalDateTime startOfTomorrow = today.plusDays(1).atStartOfDay();
+    public SalesStatsDTO getCumulativeSalesStats() {
+        long totalOrders    = orderRepo.countAllOrders();
+        long totalCustomers = orderRepo.countDistinctTablesAll();
+        long totalRevenue   = itemRepo.sumRevenueAll();
 
-        long totalRevenue   = itemRepo.sumRevenueByDate(today);
-        long totalOrders    = orderRepo.countByDate(today);
-        long totalCustomers = orderRepo.countDistinctCustomersByDate(today);
-
-        // 시간대별 매출
-        List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHour(today);
+        List<SalesDataPoint> rawHour = itemRepo.sumRevenueByHourAll();
         Map<Integer, Long> hourMap = rawHour.stream()
                 .collect(Collectors.toMap(SalesDataPoint::getHour, SalesDataPoint::getRevenue));
         List<SalesDataPoint> salesByHour = IntStream.rangeClosed(0, 23)
                 .mapToObj(h -> new SalesDataPoint(h, hourMap.getOrDefault(h, 0L)))
                 .collect(Collectors.toList());
 
-        // 메뉴별 이윤
-        List<SalesMenuPoint> salesByMenu = itemRepo.sumProfitByMenu(startOfToday, startOfTomorrow);
+        List<SalesMenuPoint> salesByMenu = itemRepo.sumProfitByMenuAll();
         long totalProfit = salesByMenu.stream()
                 .mapToLong(SalesMenuPoint::getProfit)
                 .sum();

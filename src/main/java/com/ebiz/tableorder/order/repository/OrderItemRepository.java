@@ -63,4 +63,35 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTime")   LocalDateTime endDateTime
     );
+
+    /** 전체 누적 매출 */
+    @Query("""
+      SELECT COALESCE(SUM(i.quantity * i.menu.price), 0)
+      FROM OrderItem i
+    """)
+    long sumRevenueAll();
+
+    /** 전체 누적 시간대별 매출 */
+    @Query("""
+      SELECT new com.ebiz.tableorder.menu.dto.SalesDataPoint(
+        HOUR(i.order.createdAt),
+        COALESCE(SUM(i.quantity * i.menu.price), 0)
+      )
+      FROM OrderItem i
+      GROUP BY HOUR(i.order.createdAt)
+      ORDER BY HOUR(i.order.createdAt)
+    """)
+    List<SalesDataPoint> sumRevenueByHourAll();
+
+    /** 전체 누적 메뉴별 이윤 */
+    @Query("""
+      SELECT new com.ebiz.tableorder.menu.dto.SalesMenuPoint(
+        i.menu.name,
+        COALESCE(SUM((i.menu.price - i.menu.cost) * i.quantity), 0)
+      )
+      FROM OrderItem i
+      GROUP BY i.menu.name
+      ORDER BY i.menu.name
+    """)
+    List<SalesMenuPoint> sumProfitByMenuAll();
 }
