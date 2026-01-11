@@ -1,6 +1,3 @@
-<p align="middle" >
-  <img width="100%" alt="TableOrder 메인 배너" src="https://github.com/user-attachments/assets/020b5a1b-e995-4336-8e5b-bb728d6b6808" />
-</p>
 <h1 align="middle">TableOrder (테이블 오더)</h1>
 <h3 align="middle">아주대학교 축제 주점 전용 실시간 주문 및 관리 시스템</h3>
 
